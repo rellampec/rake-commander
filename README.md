@@ -1,4 +1,4 @@
-# Ecoportal::API
+# RakeCommander
 
 Another way to define re-usable rake tasks and samples.
 
