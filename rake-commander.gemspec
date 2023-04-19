@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["oscar@ecoportal.co.nz"]
 
   spec.summary       = 'The classed version of rake with task options. Create re-usable tasks and samples.'
-  spec.homepage      = "https://www.ecoportal.com"
+  spec.homepage      = "https://github.com/rellampec/rake-commander"
   spec.licenses      = %w[MIT]
 
   spec.files         = `git ls-files -z`.split("\x0").reject do |f|
