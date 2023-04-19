@@ -1,0 +1,10 @@
+--readme README.md
+--charset utf-8
+--markup-provider=redcarpet
+--markup=markdown
+--no-private
+--output-dir ./doc
+'lib/**/*.rb'
+-
+CHANGELOG.md
+LICENSE
