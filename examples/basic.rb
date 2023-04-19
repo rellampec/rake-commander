@@ -1,11 +1,11 @@
 require_relative File.join(__dir__, '../lib/rake-commander')
 class RakeCommander::Custom::Basic < RakeCommander
-  namespace :basic
+  namespace :examples
 
   desc 'A simple example to get started'
-  task :example
+  task :basic
 
-  banner "Usage: basic:example -- [options]"
+  #banner "Usage: basic:example -- [options]"
   option '-s', '--say [SOMETHING]', "It says 'something'", default: %q(I don't know what to "say"...)
   option :d, '--folder NAME', default: '.', desc: 'Source local folder', required: true
   option '-e', '--enviro ENV', 'The target environment to run this task', required: true
@@ -23,7 +23,7 @@ class RakeCommander::Custom::Basic < RakeCommander
 end
 
 RakeCommander.self_load
-Rake::Task[:'basic:example'].invoke
+Rake::Task[:'examples:basic'].invoke
 # ruby basic.rb -- -v -d /some/folder -t
 
 #RakeCommander::Custom::Basic.parse_options %w[--help]

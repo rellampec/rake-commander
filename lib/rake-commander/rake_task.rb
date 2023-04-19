@@ -92,6 +92,12 @@ class RakeCommander
         name
       end
 
+      # @return [String, NilClass] generic banner for options
+      def task_options_banner
+        str_space = respond_to?(:namespace)? "#{namespace}:" : ''
+        str_task  = respond_to?(:task)     ? "Usage: #{str_space}#{task} -- [options]" : nil
+      end
+
       private
 
       # Split into `Array` the namespace based on `NAMESPACE_DELIMITER`

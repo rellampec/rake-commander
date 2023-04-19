@@ -51,9 +51,10 @@ class RakeCommander
       end
 
       # Overrides the auto-generated banner
-      def banner(desc = nil)
-        return @banner if desc.nil?
-        @banner = desc
+      def banner(desc = :not_used)
+        return @banner = desc unless desc == :not_used
+        return @banner if @banner
+        return task_options_banner if respond_to?(:task_options_banner, true)
       end
 
       # @return [Boolean] whether results should include options defined

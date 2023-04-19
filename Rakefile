@@ -22,6 +22,11 @@ YARD::Rake::YardocTask.new(:doc) do |t|
   #t.files = ['lib/**/*.rb']
 end
 
+desc "Examples: Run examples (rake examples[basic] -- -h)"
+task :examples, [:sample] do |t, args|
+  require_relative "examples/#{args[:sample]}"
+end
+
 task default: [:spec]
 task rspec_trace: :spec_trace
 task rspec_fast: :spec_fast
