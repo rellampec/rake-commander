@@ -12,9 +12,9 @@ class RakeCommander
       raise ArgumentError, "A name should be provided. Given: #{name}" unless name.is_a?(String)
 
       super(short, name)
-      @default = kargs[:default] if kargs.key?(:default)
-      @desc    = kargs[:desc]    if kargs.key?(:desc)
-      @other_args = args
+      @default        = kargs[:default] if kargs.key?(:default)
+      @desc           = kargs[:desc]    if kargs.key?(:desc)
+      @other_args     = args
       @original_block = block
       yield(self) if block_given?
       configure_other
