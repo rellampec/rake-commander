@@ -5,19 +5,26 @@ class RakeCommander
     extend RakeCommander::Options::Name
 
     attr_accessor :desc, :default
-    attr_writer :type_coertion
+    attr_writer :type_coertion, :required
+    attr_reader :name_full
 
     def initialize(short, name, *args, **kargs, &block)
-      raise ArgumentError, "A short of one letter should be provided. Given: #{short}" unless short.is_a?(String)
-      raise ArgumentError, "A name should be provided. Given: #{name}" unless name.is_a?(String)
+      raise ArgumentError, "A short of one letter should be provided. Given: #{short}" unless self.class.valid_short?(short)
+      raise ArgumentError, "A name should be provided. Given: #{name}" unless  self.class.valid_name?(name)
 
+      @name_full = name
       super(short, name)
-      @default        = kargs[:default] if kargs.key?(:default)
-      @desc           = kargs[:desc]    if kargs.key?(:desc)
+      @default        = kargs[:default]  if kargs.key?(:default)
+      @desc           = kargs[:desc]     if kargs.key?(:desc)
+      @required       = kargs[:required] if kargs.key?(:required)
       @other_args     = args
       @original_block = block
       yield(self) if block_given?
       configure_other
+    end
+
+    def required?
+      !!@required
     end
 
     # @return [Symbol]
@@ -32,12 +39,28 @@ class RakeCommander
 
     # @return [Symbol]
     def name
-      self.class.name_sym(super)
+      self.class.name_word_sym(super)
     end
 
     # @return [String]
     def name_hyphen
-      self.class.name_hyphen(name).to_s
+      self.class.name_hyphen(name_full)
+    end
+
+    # @param [Boolean] whether this option allows an argument
+    def argument?
+      self.class.name_argument?(name_full)
+    end
+
+    # @param [String, Nil] the argument, may it exist
+    def argument
+      return nil unless argument?
+      self.class.name_argument(name_full)
+    end
+
+    # @param [Boolean] If there was an argument, whether it is required
+    def argument_required?
+      self.class.argument_required?(argument)
     end
 
     # @return [Class, NilClass]
@@ -114,14 +137,14 @@ class RakeCommander
 
     # It consumes `other_args`, to prevent direct overrides to be overriden by it.
     def configure_other
-      if type = other_args.find {|arg| arg < Class}
+      if type = other_args.find {|arg| arg.is_a?(Class)}
         self.type_coertion = type
         other_args.delete(type)
       end
       if value = other_args.find {|arg| arg.is_a?(String)}
         self.desc = value
         other_args.dup.each do |val|
-          delete(val) if val.is_a?(String)
+          other_args.delete(val) if val.is_a?(String)
         end
       end
       nil

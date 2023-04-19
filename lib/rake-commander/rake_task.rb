@@ -108,8 +108,9 @@ class RakeCommander
         end
       end
 
-      # Rake command ends at `--`.
+      # Rake command ends at `--` (`RAKE_END_COMMAND`).
       # We only want to parse the options that come afterwards
+      # @note without this approach, it will throw `OptionParser::InvalidOption` error
       # @return [Proc]
       def invoke_options_before_task(&task_method)
         object = eval('self', task_method.binding, __FILE__, __LINE__)
