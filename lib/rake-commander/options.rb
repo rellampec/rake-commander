@@ -70,21 +70,19 @@ class RakeCommander
       # It builds the `OptionParser` injecting the `middleware` block.
       # @return [Hash] with `short` option as `key` and final value as `value`.
       def parse_options(argv = ARGV, leftovers: [], &middleware)
-        left_overs = []
         options_parser_with_results(middleware) do |options_parser|
-          argv = pre_parse_arguments(argv, options_hash)
+          argv = pre_parse_arguments(argv, options: options_hash)
+          pp argv
           leftovers.push(*options_parser.parse(argv))
         rescue OptionParser::MissingArgument => e
           raise RakeCommander::Options::MissingArgument, e, cause: nil
         rescue OptionParser::InvalidArgument => e
           error = RakeCommander::Options::InvalidArgument
           error = error.new(e)
-          if (opt = options_hash[error.option_sym]) && opt.argument_required?
-            msg = "missing required argument: #{opt.name_hyphen} (#{opt.short_hyphen})"
-            raise RakeCommander::Options::MissingArgument, msg, cause: nil
-          else
-            raise error, e, cause: nil
-          end
+          opt   = options_hash[error.option_sym]
+          msg = "missing required argument: #{opt&.name_hyphen} (#{opt&.short_hyphen})"
+          raise RakeCommander::Options::MissingArgument, msg, cause: nil if opt&.argument_required?
+          raise error, e, cause: nil
         end.tap do |results|
           check_required_presence!(results)
         end
@@ -124,7 +122,7 @@ class RakeCommander
         {}.tap do |res_def|
           options.select do |opt|
             (results_with_all_defaults && opt.default?) \
-            ||  (opt.required? && opt.default?)
+            || (opt.required? && opt.default?)
           end.each do |opt|
             res_def[opt.short] = opt.default
           end
@@ -134,12 +132,10 @@ class RakeCommander
       # It throws an exception if any of the required options
       # is missing in results
       def check_required_presence!(results)
-        missing = options.select do |opt|
-          opt.required?
-        end.reject do |opt|
+        missing = options.select(&:required?).reject do |opt|
           results.key?(opt.short) || results.key?(opt.name)
         end
-        raise RakeCommander::Options::MissingOption.new(missing) unless missing.empty?
+        raise RakeCommander::Options::MissingOption, missing unless missing.empty?
       end
 
       def add_to_options(opt)
@@ -158,7 +154,7 @@ class RakeCommander
     end
 
     def options(argv = ARGV)
-      @options ||= self.class.parse_options(argv, leftovers: self.options_leftovers)
+      @options ||= self.class.parse_options(argv, leftovers: options_leftovers)
     end
 
     def options_leftovers

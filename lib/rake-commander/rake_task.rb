@@ -28,7 +28,8 @@ class RakeCommander
 
         # ensure options are parsed before calling task
         # and that ARGV is only parsed after `--`
-        task_method = invoke_options_before_task(&task_method) if options?
+        # do an `exit(0)` right at the end
+        task_method = task_context(&task_method) if options?
 
         if namespaced?
           namespaced do
@@ -95,7 +96,7 @@ class RakeCommander
       # @return [String, NilClass] generic banner for options
       def task_options_banner
         str_space = respond_to?(:namespace)? "#{namespace}:" : ''
-        str_task  = respond_to?(:task)     ? "Usage: #{str_space}#{task} -- [options]" : nil
+        respond_to?(:task) ? "Usage: #{str_space}#{task} -- [options]" : nil
       end
 
       private
@@ -116,9 +117,12 @@ class RakeCommander
 
       # Rake command ends at `--` (`RAKE_END_COMMAND`).
       # We only want to parse the options that come afterwards
-      # @note without this approach, it will throw `OptionParser::InvalidOption` error
+      # @note
+      #   1. Without `ARGV` cut, it will throw `OptionParser::InvalidOption` error
+      #   2. **Work-around**: We also add an `exit(0)` at the end to prevent `Rake` chaining
+      #     option arguments as if they were actual tasks.
       # @return [Proc]
-      def invoke_options_before_task(&task_method)
+      def task_context(&task_method)
         object = eval('self', task_method.binding, __FILE__, __LINE__)
         return task_method unless object.is_a?(self)
         proc do |*args|
@@ -128,6 +132,7 @@ class RakeCommander
           end
           object.options(argv)
           task_method.call(*args)
+          exit(0)
         end
       end
     end

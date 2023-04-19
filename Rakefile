@@ -23,7 +23,7 @@ YARD::Rake::YardocTask.new(:doc) do |t|
 end
 
 desc "Examples: Run examples (rake examples[basic] -- -h)"
-task :examples, [:sample] do |t, args|
+task :examples, [:sample] do |_t, args|
   require_relative "examples/#{args[:sample]}"
 end
 
