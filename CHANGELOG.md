@@ -10,6 +10,8 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 ### Fixed
+  - Missing `rake` dependency in gemspec file.
+  
 ### Changed
 
 ## [0.1.4] - 2023-04-20
