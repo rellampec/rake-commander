@@ -143,12 +143,14 @@ class RakeCommander
       # @todo check that all the elements are of `option_class`
       # @return [Array<RakeCommander::Option>]
       def to_options(opts)
-        case opts
-        when Hash
+        case
+        when opts.is_a?(Hash)
           opts.values
-        when RakeCommander::Options::Set
+        when opts.is_a?(RakeCommander::Options::Set)
+          opts.class.options
+        when opts <= RakeCommander::Options::Set
           opts.options
-        when Enumerable
+        when opts.respond_to?(:to_a)
           opts.to_a
         end
       end
