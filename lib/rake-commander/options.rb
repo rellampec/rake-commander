@@ -74,7 +74,6 @@ class RakeCommander
       def parse_options(argv = ARGV, leftovers: [], &middleware)
         options_parser_with_results(middleware) do |options_parser|
           argv = pre_parse_arguments(argv, options: options_hash)
-          pp argv
           leftovers.push(*options_parser.parse(argv))
         rescue OptionParser::MissingArgument => e
           raise RakeCommander::Options::MissingArgument, e, cause: nil
