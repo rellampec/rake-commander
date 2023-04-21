@@ -44,22 +44,22 @@ class RakeCommander
 
       # Give a name to the task
       # @return [Symbol] the task name
-      def task(name = nil)
-        return @task if name.nil?
+      def task(name = :not_used)
+        return @task if name == :not_used
         @task = name.to_sym
       end
 
       # Give a description to the task
       # @return [String] the description of the task
-      def desc(str = nil)
-        return @desc if str.nil?
+      def desc(str = :not_used)
+        return @desc if str == :not_used
         @desc = str.to_s
       end
 
       # It can be hierarchical by using `NAMESPACE_DELIMITER`
       # @return [String] the namespace defined for this `RakeCommander` class.
-      def namespace(name = nil)
-        return @namespace if name.nil?
+      def namespace(name = :not_used)
+        return @namespace if name == :not_used
         @namespace = namespace_str(name)
       end
 

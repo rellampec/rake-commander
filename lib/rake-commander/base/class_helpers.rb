@@ -1,7 +1,7 @@
 class RakeCommander
   module Base
     module ClassHelpers
-      NOT_USED = 'no_used!'.freeze
+      NOT_USED = :no_used!.freeze
 
       # Helper to determine if a paramter has been used
       # @note to effectivelly use this helper, you should initialize your target
