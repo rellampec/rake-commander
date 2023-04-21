@@ -32,11 +32,13 @@ class RakeCommander
       end
 
       # Allows to use a set of options
+      # @param override [Boolean] wheter existing options with same option name
+      #   should be overriden, may they clash
       # @param options [Enumerable<RakeCommander::Option>]
-      def use_options(options)
-        options = options.values if options.is_a?(Hash)
-        options.each do |opt|
-          add_to_options(opt)
+      def use_options(opts, override: true)
+        raise "Could not obtain list of RakeCommander::Option from #{opts.class}" unless opts = to_options(opts)
+        opts.each do |opt|
+          add_to_options(opt, override: override)
         end
         self
       end
@@ -138,18 +140,37 @@ class RakeCommander
         raise RakeCommander::Options::MissingOption, missing unless missing.empty?
       end
 
-      def add_to_options(opt)
+      # @todo check that all the elements are of `RakeCommander::Option`
+      # @return [Array<RakeCommander::Option>]
+      def to_options(opts)
+        case opts
+        when Hash
+          opts.values
+        when RakeCommander::Options::Set
+          opts.options
+        when Enumerable
+          opts.to_a
+        end
+      end
+
+      # Adds to `@options_hash` the option `opt`
+      # @todo add `exception` parameter, to trigger an exception
+      #   when `opt` name or short are taken (and override is `false`)
+      def add_to_options(opt, override: true)
         if prev = options_hash[opt.short]
+          return false unless override
           puts "Warning: Overriding option with short '#{prev.short}' ('#{prev.name}')"
           options_hash.delete(prev.short)
           options_hash.delete(prev.name)
         end
         if prev = options_hash[opt.name]
+          return false unless override
           puts "Warning: Overriding option with name '#{prev.name}' ('#{prev.short}')"
           options_hash.delete(prev.short)
           options_hash.delete(prev.name)
         end
         options_hash[opt.name] = options_hash[opt.short] = opt
+        true
       end
     end
 
