@@ -3,6 +3,8 @@ class RakeCommander
     # Offers helpers to treat `ARGV`
     module Arguments
       include RakeCommander::Options::Name
+      NAME_ARGUMENT    = /^--(?<option>[\w_-]*).*?$/.freeze
+      BOOLEAN_ARGUMENT = /(?:^|--)no-(?<option>[\w_-]*).*?$/.freeze
 
       # Options with arguments should not take another option as value.
       # `OptionParser` can do this even if the the argument is optional.
@@ -70,7 +72,13 @@ class RakeCommander
           opt_ref = args.shift
           next unless args.empty?
           next unless opt_ref.is_a?(Symbol)
-          next unless opt = options[opt_ref]
+          unless opt = options[opt_ref]
+            # It might be `--no-option-name`
+            next unless match   = opt_ref.to_s.match(BOOLEAN_ARGUMENT)
+            next unless opt_ref = match[:option]
+            next unless opt     = options[opt_ref.to_sym]
+            next unless opt.boolean_name?
+          end
           next unless opt.argument?
           next group.push(opt.default) if opt.default?
           group.push(nil)
@@ -104,7 +112,7 @@ class RakeCommander
               out << short_sym(short)
             end
           elsif double_hyphen?(arg) # name option
-            name = arg.match(DOUBLE_HYPHEN_REGEX)[:option]
+            name = arg.match(NAME_ARGUMENT)[:option]
             out << name_sym(name)
           else # argument
             out << arg

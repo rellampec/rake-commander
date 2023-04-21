@@ -8,11 +8,11 @@ class RakeCommander
     end
 
     class MissingArgument < RakeCommander::Options::ErrorRely
-      OPTION_REGEX = /missing (?:required|) argument: (?<option>.+)/i.freeze
+      option_regex /missing(?: required|) argument: (?<option>.+)/i.freeze
     end
 
     class InvalidArgument < RakeCommander::Options::ErrorRely
-      OPTION_REGEX = /invalid argument: (?<option>.+)/i.freeze
+      option_regex /invalid argument: (?<option>.+)/i.freeze
     end
   end
 end

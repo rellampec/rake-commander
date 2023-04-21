@@ -9,27 +9,42 @@ class RakeCommander
         super(base)
         base.extend RakeCommander::Base::ClassHelpers
         base.extend ClassMethods
-        base.inheritable_attrs :banner, :options_hash, :results_with_all_defaults
+        base.inheritable_attrs :banner, :options_hash, :options_with_defaults
         base.class_resolver :option_class, RakeCommander::Option
         base.extend RakeCommander::Options::Arguments
       end
     end
 
     module ClassMethods
-      def options_hash
+      def options_hash(with_implicit: false)
         @options_hash ||= {}
+        return @options_hash unless with_implicit
+        @options_hash.merge(implicit_shorts)
       end
 
+      # This covers the gap where `OptionParser` auto-generates shorts out of option names.
+      # @return [Hash] with free shorts that are implicit to some option
+      def implicit_shorts
+        options.each_with_object({}) do |opt, implicit|
+          short = opt.short_implicit
+          implicit[short] = opt unless options_hash.key?(short)
+        end
+      end
+
+      # @return [Array<RakeCommander::Option>]
       def options
         options_hash.values.uniq
       end
 
+      # @return [Boolean] are there options defined?
       def options?
         !options.empty?
       end
 
+      # Clears all the options.
       def clear_options!
         @options_hash = {}
+        self
       end
 
       # Allows to use a set of options
@@ -44,13 +59,28 @@ class RakeCommander
         self
       end
 
-      # Defines a new option
+      # Defines a new option or opens for edition an existing one if `reopen: true` is used.
       # @note
-      #   - It will override with a Warning options with same `short` or `name`
-      def option(*args, **kargs, &block)
+      #   - If override is `true`, it will with a Warning when same `short` or `name` clashes.
+      def option(*args, override: true, reopen: false, **kargs, &block)
+        return option_reopen(*args, override: override, **kargs, &block) if reopen
         opt = option_class.new(*args, **kargs, &block)
-        add_to_options(opt)
+        add_to_options(opt, override: override)
         self
+      end
+
+      # It re-opens an option for edition. If it does not exist, it **upserts** it.
+      # @note
+      #   1. If `override` is `false, it will fail to change the `name` or the `short`
+      #     when they are already taken by some other option.
+      #   2. It will have the effect of overriding existing options
+      # @note when `short` and `name` are provided, `name` takes precedence over `short`
+      #   in the lookup (to identify the existing option)
+      def option_reopen(*args, override: false, **kargs, &block)
+        opt = option_class.new(*args, **kargs, sample: true, &block)
+        ref = options_hash.values_at(opt.name, opt.short).compact.first
+        return add_to_options(opt) unless ref
+        replace_in_options(ref, ref.merge(opt), override: override)
       end
 
       # Overrides the auto-generated banner
@@ -62,11 +92,11 @@ class RakeCommander
 
       # @return [Boolean] whether results should include options defined
       #   with a default, regarless if they are invoked
-      def results_with_all_defaults(value = nil)
+      def options_with_defaults(value = nil)
         if value.nil?
-          @results_with_all_defaults || false
+          @options_with_defaults || false
         else
-          @results_with_all_defaults = !!value
+          @options_with_defaults = !!value
         end
       end
 
@@ -74,17 +104,19 @@ class RakeCommander
       # @return [Hash] with `short` option as `key` and final value as `value`.
       def parse_options(argv = ARGV, leftovers: [], &middleware)
         options_parser_with_results(middleware) do |options_parser|
-          argv = pre_parse_arguments(argv, options: options_hash)
+          argv = pre_parse_arguments(argv, options: options_hash(with_implicit: true))
           leftovers.push(*options_parser.parse(argv))
         rescue OptionParser::MissingArgument => e
-          raise RakeCommander::Options::MissingArgument, e, cause: nil
+          klass = RakeCommander::Options::MissingArgument
+          opt   = error_option(e, klass)
+          msg   = opt ? "missing required argument: #{opt.name_hyphen} (#{opt.short_hyphen})" : e.message
+          raise klass, msg, cause: nil
         rescue OptionParser::InvalidArgument => e
-          error = RakeCommander::Options::InvalidArgument
-          error = error.new(e)
-          opt   = options_hash[error.option_sym]
-          msg = "missing required argument: #{opt&.name_hyphen} (#{opt&.short_hyphen})"
-          raise RakeCommander::Options::MissingArgument, msg, cause: nil if opt&.argument_required?
-          raise error, e, cause: nil
+          klass = RakeCommander::Options::InvalidArgument
+          opt   = error_option(e, klass)
+          raise klass, e, cause: nil unless opt&.argument_required?
+          msg = "missing required argument: #{opt.name_hyphen} (#{opt.short_hyphen})"
+          raise OptionParser::MissingArgument, msg, cause: nil
         end.tap do |results|
           check_required_presence!(results)
         end
@@ -92,17 +124,42 @@ class RakeCommander
 
       protected
 
+      def error_option(e, klass)
+        return false unless option_sym = klass.option_sym(e.message)
+        # puts klass
+        # puts e.message
+        #
+        # pp option_sym
+        # puts "Implicit shorts:"
+        # pp implicit_shorts.keys
+        options_hash(with_implicit: true)[option_sym]
+      end
+
       # @return [OptionParser] the built options parser.
       def options_parser(&middleware)
         new_options_parser do |opts|
           opts.banner = banner if banner
-          options.each {|opt| opt.add_switch(opts, &middleware)}
+          # Install help explicitly
+          option(:h, :help, 'Prints this help') { puts opts; exit(0) }
+          free_shorts = implicit_shorts
+
+          options.each do |opt|
+            free_short = free_shorts.key?(opt.short_implicit)
+            opt.add_switch(opts, implicit_short: free_short, &middleware)
+          end
         end
       end
 
       def new_options_parser(&block)
         require 'optparse'
         OptionParser.new(&block)
+      end
+
+      def install_help(opts_parser)
+        # unless options_hash.key?(:h) || options_hash.key?(:help)
+        #   opts.on_tail('-h', '--help', 'Prints this help') { puts opts; exit(0) }
+        # end
+
       end
 
       private
@@ -123,7 +180,7 @@ class RakeCommander
       def result_defaults
         {}.tap do |res_def|
           options.select do |opt|
-            (results_with_all_defaults && opt.default?) \
+            (options_with_defaults && opt.default?) \
             || (opt.required? && opt.default?)
           end.each do |opt|
             res_def[opt.short] = opt.default
@@ -158,21 +215,44 @@ class RakeCommander
       # Adds to `@options_hash` the option `opt`
       # @todo add `exception` parameter, to trigger an exception
       #   when `opt` name or short are taken (and override is `false`)
+      # @return [Boolean] wheter or not it succeeded adding the option.
       def add_to_options(opt, override: true)
         if prev = options_hash[opt.short]
           return false unless override
           puts "Warning: Overriding option with short '#{prev.short}' ('#{prev.name}')"
-          options_hash.delete(prev.short)
-          options_hash.delete(prev.name)
+          delete_from_options(prev)
         end
         if prev = options_hash[opt.name]
           return false unless override
           puts "Warning: Overriding option with name '#{prev.name}' ('#{prev.short}')"
-          options_hash.delete(prev.short)
-          options_hash.delete(prev.name)
+          delete_from_options(prev)
         end
         options_hash[opt.name] = options_hash[opt.short] = opt
         true
+      end
+
+      # Deletes an option from the `options_hash`
+      def delete_from_options(opt)
+        options_hash.delete(opt.short)
+        options_hash.delete(opt.name)
+      end
+
+      # @return [Boolean] whether it succeeded replacing option `ref` with `opt`
+      def replace_in_options(ref, opt, override: false)
+        # Try to keep the same potition
+        options_hash[ref.short] = options_hash[ref.name] = nil
+        add_to_options(opt, override: override).tap do |success|
+          next options_hash[ref.short] = options_hash[ref.name] = ref unless success
+          delete_empty_keys(options_hash)
+        end
+      end
+
+      # Deletes all keys with `nil` as value
+      def delete_empty_keys(h)
+        h.dup.each do |k, v|
+          next unless v.nil?
+          h.delete(k)
+        end
       end
     end
 

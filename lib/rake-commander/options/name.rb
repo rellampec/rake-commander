@@ -1,15 +1,17 @@
 class RakeCommander
   module Options
     module Name
+      BOOLEAN_TOKEN       = '[no-]'
       # Substitions
       HYPHEN_START_REGEX  = /^-+/.freeze
       HYPEN_REGEX         = /-+/.freeze
       UNDERSCORE_REGEX    = /_+/.freeze
-      SPACE_REGEX         = /\s+/.freeze
-      # Checkers
+      WORD_DELIMITER      = /[\s=]+/.freeze
+      # Checkers / Capturers
       OPTIONAL_REGEX      = /\[\w+\]$/.freeze
       SINGLE_HYPHEN_REGEX = /^-(?<options>[^- ][^ ]*)/.freeze
-      DOUBLE_HYPHEN_REGEX = /^--(?<option>[^- ][^ ]*)/.freeze
+      DOUBLE_HYPHEN_REGEX = /^(?:--\[?no-\]?|--)(?<option>[^- ][^ \r\n]*).*$/.freeze
+      BOOLEAN_NAME_REGEX  = /^[^ ]*#{Regexp.escape(BOOLEAN_TOKEN)}[^ ]{2,}/.freeze
 
       # @return [Boolean]
       def single_hyphen?(value)
@@ -23,11 +25,17 @@ class RakeCommander
         !!value.to_s.match(DOUBLE_HYPHEN_REGEX)
       end
 
+      # @return [Boolean] whether the name has the boolean switch `[no-]`
+      def boolean_name?(value)
+        return false unless value.respond_to?(:to_s)
+        !!value.to_s.match(BOOLEAN_NAME_REGEX)
+      end
+
       # @param strict [Boolean] whether hyphen is required when declaring an option `short`
       # @return [Boolean]
       def valid_short?(value, strict: false)
         return false unless value.respond_to?(:to_s) && !value.to_s.empty?
-        return false unless !strict || single_hypen(value)
+        return false unless !strict || single_hyphen(value)
         short_sym(value).to_s.length == 1
       end
 
@@ -42,7 +50,7 @@ class RakeCommander
       # @param strict [Boolean] whether hyphen is required when declaring an option `short`
       # @return [Boolean] whether `value` is an hyphened option `short`
       def short_hyphen?(value, strict: false)
-        short?(value, strict: strict) && single_hypen(value)
+        short?(value, strict: strict) && single_hyphen(value)
       end
 
       # @param strict [Boolean] whether hyphen is required when declaring an option `name`
@@ -57,7 +65,8 @@ class RakeCommander
       # @return [Symbol, NilClass]
       def short_sym(value)
         return nil unless value
-        value = value.to_s.gsub(HYPHEN_START_REGEX, '')
+        value = value.to_s.gsub(BOOLEAN_TOKEN, '')
+        value = value.gsub(HYPHEN_START_REGEX, '')
         return nil unless value = value.chars.first
         value.to_sym
       end
@@ -74,20 +83,25 @@ class RakeCommander
         return nil unless value
         value = value.to_s.gsub(HYPHEN_START_REGEX, '')
         value = value.gsub(HYPEN_REGEX, '_')
-        value = value.gsub(SPACE_REGEX, ' ')
+        value = value.gsub(WORD_DELIMITER, ' ')
         return nil if value.empty?
         value.to_sym
       end
 
       # It's like `#name_sym` but it only gets the option name.
+      # @note
+      #   1. It also removes the boolean token `[no-]`
       # @example
       #   * `"--there-we-go   ARGUMENT"` becomes `:there_we_go`
+      #   * `"--[no]-verbose"` becomes `:verbose`
       # @see #name_sym
       # @return [Symbol, NilClass]
       def name_word_sym(value)
         return nil unless value = name_sym(value)
+        value = value.to_s.gsub(BOOLEAN_TOKEN, '')
+
         return nil unless value = name_words(value).first
-        value.to_sym
+        value.downcase.to_sym
       end
 
       # @return [String, NilClass] it returns the hyphened (`-`) version of a short `value`
@@ -98,7 +112,7 @@ class RakeCommander
 
       # Gets the actual name of the option. First word.
       # @example
-      #   * `"--there-we-go   ARGUMENT"` becomes `"--there-we-go"`
+      #   * `"--there-we-go   ARGUMENT"` becomes `"--there-we-go ARGUMENT"`
       #   * `"there-we-go"` becomes `"--there-we-go"`
       #   * `:there_we_go` becomes `"--there-we-go"`
       # @return [String, NilClass] option `name` alone double hypened (`--`)
@@ -153,7 +167,7 @@ class RakeCommander
       def name_words(value)
         return nil unless value
         value = value.to_s.gsub(HYPHEN_START_REGEX, '')
-        value.to_s.split(SPACE_REGEX)
+        value.to_s.split(WORD_DELIMITER)
       end
     end
   end

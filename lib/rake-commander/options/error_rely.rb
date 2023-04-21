@@ -3,8 +3,24 @@ class RakeCommander
     # Relies between OptionParser and RakeCommander errors
     class ErrorRely < StandardError
       extend RakeCommander::Options::Name
-
       OPTION_REGEX = /(?:argument|option): (?<option>.+)/i.freeze
+
+      class << self
+        # To (re)define the RegExp used to identify the option of an error message.
+        def option_regex(value = :not_used)
+          @option_regex ||= OPTION_REGEX
+          return @option_regex if value == :not_used
+          @option_regex = value
+        end
+
+        # Identifies the option `Symbol` (short or name) for a given message
+        def option_sym(message)
+          return nil unless match = message.match(option_regex)
+          option = match[:option]
+          return name_word_sym(option) if option.length > 1
+          short_sym(option)
+        end
+      end
 
       def initialize(value)
         case value
@@ -26,15 +42,7 @@ class RakeCommander
       end
 
       def option_sym
-        return @option_sym if @option_sym
-        return nil unless match = message.match(self.class::OPTION_REGEX)
-        option = match[:option]
-        @option_sym = \
-          if option.length > 1
-            self.class.name_word_sym(option)
-          else
-            self.class.short_sym(option)
-          end
+        @option_sym ||= self.class.option_sym(message)
       end
 
       private

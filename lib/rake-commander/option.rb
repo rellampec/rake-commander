@@ -4,25 +4,43 @@ class RakeCommander
     extend RakeCommander::Base::ClassHelpers
     extend RakeCommander::Options::Name
 
-    attr_accessor :desc, :default
-    attr_writer :type_coertion, :required
-    attr_reader :name_full
+    attr_reader :name_full, :desc, :default
 
-    def initialize(short, name, *args, **kargs, &block)
-      raise ArgumentError, "A short of one letter should be provided. Given: #{short}" unless self.class.valid_short?(short)
-      raise ArgumentError, "A name should be provided. Given: #{name}" unless  self.class.valid_name?(name)
+    # @param sample [Boolean] allows to skip the `short` and `name` validations
+    def initialize(short = nil, name = nil, *args, sample: false, **kargs, &block)
+      short ||= kargs[:short]
+      name  ||= kargs[:name]
+      unless sample
+        raise ArgumentError, "A short of one letter should be provided. Given: #{short}" unless self.class.valid_short?(short)
+        raise ArgumentError, "A name should be provided. Given: #{name}" unless  self.class.valid_name?(name)
+      end
 
-      @name_full = name
-      super(short, name)
+      @name_full = name.freeze
+      super(short.freeze, @name_full)
       @default        = kargs[:default]  if kargs.key?(:default)
       @desc           = kargs[:desc]     if kargs.key?(:desc)
       @required       = kargs[:required] if kargs.key?(:required)
+      @type_coertion  = kargs[:type]     if kargs.key?(:type)
       @other_args     = args
       @original_block = block
-      yield(self) if block_given?
       configure_other
     end
 
+    # Makes a copy of this option
+    # @return [RakeCommander::Option]
+    def clone(**kargs, &block)
+      block ||= original_block
+      self.class.new(**clone_key_arguments.merge(kargs), &block)
+    end
+
+    # Creates a new option, result of merging this `opt` with this option,
+    # @return [RakeCommander::Option] where opt has been merged
+    def merge(opt)
+      raise "Expecting RakeCommander::Option. Given: #{opt.class}" unless opt.is_a?(RakeCommander::Option)
+      clone(**opt.clone_key_arguments, &opt.original_block)
+    end
+
+    # @return [Boolean] whether this option is required.
     def required?
       !!@required
     end
@@ -30,6 +48,13 @@ class RakeCommander
     # @return [Symbol]
     def short
       self.class.short_sym(super)
+    end
+
+    # `OptionParser` interprets free shorts that match the first letter of an option name
+    # as an invocation of that option. This method allows to identify this.
+    # return [Symbol]
+    def short_implicit
+      self.class.short_sym(@name_full)
     end
 
     # @return [String]
@@ -45,6 +70,11 @@ class RakeCommander
     # @return [String]
     def name_hyphen
       self.class.name_hyphen(name_full)
+    end
+
+    # @return [Boolean]
+    def boolean_name?
+      self.class.boolean_name?(name_full)
     end
 
     # @param [Boolean] whether this option allows an argument
@@ -75,24 +105,45 @@ class RakeCommander
 
     # Adds this option's switch to the `OptionParser`
     # @note it allows to add a `middleware` block that will be called at `parse` runtime
-    def add_switch(opts_parser, where: :base, &middleware)
+    # @param opt_parser [OptionParser] the option parser to add this option's switch.
+    # @param implicit_short [Boolean] whether the implicit short of this option is active in the opts_parser.
+    def add_switch(opts_parser, where: :base, implicit_short: false, &middleware)
       raise "Expecting OptionParser. Given: #{opts_parser.class}" unless opts_parser.is_a?(OptionParser)
+      args  = switch_args(implicit_short: implicit_short)
+      block = option_block(&middleware)
       case where
       when :head, :top
-        opts_parser.on_head(*switch_args, &option_block(&middleware))
+        opts_parser.on_head(*args, &block)
       when :tail, :end
-        opts_parser.on_tail(*switch_args, &option_block(&middleware))
+        opts_parser.on_tail(*args, &block)
       else # :base
-        opts_parser.on(*switch_args, &option_block(&middleware))
+        opts_parser.on(*args, &block)
       end
       opts_parser
     end
 
+    protected
+
+    # @return [Hash] keyed arguments to create a new object
+    def clone_key_arguments
+      {}.tap do |kargs|
+        kargs.merge!(short:    short.dup.freeze)      if short
+        kargs.merge!(name:     name_full.dup.freeze)  if name_full
+        kargs.merge!(desc:     desc.dup)              if desc
+        kargs.merge!(required: required?)
+        kargs.merge!(default:  default.dup)           if default?
+      end
+    end
+
+    def original_block
+      @original_block
+    end
+
     # @return [Array<Variant>]
-    def switch_args
+    def switch_args(implicit_short: false)
       configure_other
       args = [short_hyphen, name_hyphen]
-      if str = switch_desc
+      if str = switch_desc(implicit_short: implicit_short)
         args << str
       end
       args << type_coertion if type_coertion
@@ -106,20 +157,25 @@ class RakeCommander
       block_extra_args = [default, short, name]
       proc do |value|
         args = block_extra_args.dup.unshift(value)
-        @original_block&.call(*args)
+        original_block&.call(*args)
         middleware&.call(*args)
       end
     end
 
-    def switch_desc
-      val = "#{desc}#{default_desc}"
+    def switch_desc(implicit_short: false)
+      ishort = implicit_short ? "( -#{short_implicit} ) " : ''
+      val = "#{required_desc}#{ishort}#{desc}#{default_desc}"
       return nil if val.empty?
       val
     end
 
+    def required_desc
+      required?? "< REQ >  " : "[ opt ]  "
+    end
+
     def default_desc
       return nil unless default?
-      str = "Default: '#{default}'"
+      str = "{ Default: '#{default}' }"
       if desc && !desc.downcase.include?('default')
         str = desc.end_with?('.') ? " #{str}" : ". #{str}"
       end
@@ -138,11 +194,11 @@ class RakeCommander
     # It consumes `other_args`, to prevent direct overrides to be overriden by it.
     def configure_other
       if type = other_args.find {|arg| arg.is_a?(Class)}
-        self.type_coertion = type
+        @type_coertion = type
         other_args.delete(type)
       end
       if value = other_args.find {|arg| arg.is_a?(String)}
-        self.desc = value
+        @desc = value
         other_args.dup.each do |val|
           other_args.delete(val) if val.is_a?(String)
         end
