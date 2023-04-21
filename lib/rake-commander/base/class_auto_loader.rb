@@ -61,13 +61,20 @@ class RakeCommander
         @autoloaded_children ||= []
       end
 
+      # Prevents already excluded childrent to enter into the loop again.
+      def excluded_children
+        @excluded_children ||= []
+      end
+
       # Children classes of `autoloader_class` that have not been created an instance of.
       def unloaded_children
         return [] unless autoloaded_class
         new_detected = new_classes
         known_class!(*new_detected)
         descendants(parent_class: autoloaded_class, scope: new_detected).select do |child_class|
-          !autoloaded_children.include?(child_class) && autoload_class?(child_class)
+          !autoloaded_children.include?(child_class) && \
+            !excluded_children.include?(child_class) && \
+            autoload_class?(child_class)
         end.sort
       end
 
@@ -79,14 +86,15 @@ class RakeCommander
         return false if pending_children.empty?
         @loading_children = true
         pending_children.each do |klass|
-          child = object ? klass.new(object) : klass.new
+          exclude = false
+          child   = object ? klass.new(object) : klass.new
           yield(child) if block_given?
-
         rescue TypeError
           # Can't create from this class (must be the singleton class)
-          # Just ignore
+          exclude = true
+          excluded_children.push(klass)
         ensure
-          autoloaded_children.push(klass)
+          autoloaded_children.push(klass) unless exclude
         end
         @loading_children = false
         true
