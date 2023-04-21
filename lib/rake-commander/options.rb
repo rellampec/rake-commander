@@ -10,6 +10,7 @@ class RakeCommander
         base.extend RakeCommander::Base::ClassHelpers
         base.extend ClassMethods
         base.inheritable_attrs :banner, :options_hash, :results_with_all_defaults
+        base.class_resolver :option_class, RakeCommander::Option
         base.extend RakeCommander::Options::Arguments
       end
     end
@@ -47,7 +48,7 @@ class RakeCommander
       # @note
       #   - It will override with a Warning options with same `short` or `name`
       def option(*args, **kargs, &block)
-        opt = RakeCommander::Option.new(*args, **kargs, &block)
+        opt = option_class.new(*args, **kargs, &block)
         add_to_options(opt)
         self
       end
@@ -139,7 +140,7 @@ class RakeCommander
         raise RakeCommander::Options::MissingOption, missing unless missing.empty?
       end
 
-      # @todo check that all the elements are of `RakeCommander::Option`
+      # @todo check that all the elements are of `option_class`
       # @return [Array<RakeCommander::Option>]
       def to_options(opts)
         case opts

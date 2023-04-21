@@ -12,6 +12,8 @@ All notable changes to this project will be documented in this file.
   - Better support for `RakeCommander::Options::Set`
     - `RakeCommander::Options::use_options` accepts it as a parameter.
     - Added `override` parameter to specify if this should override clashed option names.
+  - `RakeCommander::Options::class_resolver` to define the `RakeCommander::Option` class.
+    - Serves the purpose to ease class extension through inheritance.
 
 ### Fixed
   - `RakeCommander::Base::ClassAutoLoader`
