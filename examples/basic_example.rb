@@ -1,5 +1,4 @@
-require_relative File.join(__dir__, '../lib/rake-commander')
-class RakeCommander::Custom::Basic < RakeCommander
+class RakeCommander::Custom::BasicExample < RakeCommander
   namespace :examples
 
   desc 'A simple example to get started'
@@ -27,10 +26,3 @@ class RakeCommander::Custom::Basic < RakeCommander
     puts options[:s]                         if options.key?(:s)
   end
 end
-
-RakeCommander.self_load
-Rake::Task[:'examples:basic'].invoke
-# ruby basic.rb -- -v -d /some/folder -t
-
-#RakeCommander::Custom::Basic.parse_options %w[--help]
-#RakeCommander::Custom::Basic.parse_options %w[-d]

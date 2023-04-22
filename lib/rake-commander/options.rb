@@ -1,5 +1,7 @@
 require_relative 'options/name'
 require_relative 'options/arguments'
+require_relative 'options/result'
+require_relative 'options/error'
 require_relative 'option'
 
 class RakeCommander
@@ -9,28 +11,16 @@ class RakeCommander
         super(base)
         base.extend RakeCommander::Base::ClassHelpers
         base.extend ClassMethods
-        base.inheritable_attrs :banner, :options_hash, :options_with_defaults
+        base.inheritable_attrs :banner, :options_hash
         base.class_resolver :option_class, RakeCommander::Option
-        base.extend RakeCommander::Options::Arguments
+        base.send :include, RakeCommander::Options::Result
+        base.send :include, RakeCommander::Options::Error
+        base.send :include, RakeCommander::Options::Arguments
       end
     end
 
     module ClassMethods
-      def options_hash(with_implicit: false)
-        @options_hash ||= {}
-        return @options_hash unless with_implicit
-        @options_hash.merge(implicit_shorts)
-      end
-
-      # This covers the gap where `OptionParser` auto-generates shorts out of option names.
-      # @return [Hash] with free shorts that are implicit to some option
-      def implicit_shorts
-        options.each_with_object({}) do |opt, implicit|
-          short = opt.short_implicit
-          implicit[short] = opt unless options_hash.key?(short)
-        end
-      end
-
+      # List of configured options
       # @return [Array<RakeCommander::Option>]
       def options
         options_hash.values.uniq
@@ -90,51 +80,24 @@ class RakeCommander
         return task_options_banner if respond_to?(:task_options_banner, true)
       end
 
-      # @return [Boolean] whether results should include options defined
-      #   with a default, regarless if they are invoked
-      def options_with_defaults(value = nil)
-        if value.nil?
-          @options_with_defaults || false
-        else
-          @options_with_defaults = !!value
-        end
-      end
-
-      # It builds the `OptionParser` injecting the `middleware` block.
+      # It parses the `ARGV`.
+      # @note it builds the `OptionParser` injecting the `middleware` block.
       # @return [Hash] with `short` option as `key` and final value as `value`.
-      def parse_options(argv = ARGV, leftovers: [], &middleware)
-        options_parser_with_results(middleware) do |options_parser|
-          argv = pre_parse_arguments(argv, options: options_hash(with_implicit: true))
-          leftovers.push(*options_parser.parse(argv))
-        rescue OptionParser::MissingArgument => e
-          klass = RakeCommander::Options::MissingArgument
-          opt   = error_option(e, klass)
-          msg   = opt ? "missing required argument: #{opt.name_hyphen} (#{opt.short_hyphen})" : e.message
-          raise klass, msg, cause: nil
-        rescue OptionParser::InvalidArgument => e
-          klass = RakeCommander::Options::InvalidArgument
-          opt   = error_option(e, klass)
-          raise klass, e, cause: nil unless opt&.argument_required?
-          msg = "missing required argument: #{opt.name_hyphen} (#{opt.short_hyphen})"
-          raise OptionParser::MissingArgument, msg, cause: nil
-        end.tap do |results|
-          check_required_presence!(results)
-        end
+
+      # Options
+      # @note this method is extended in via the following modules:
+      #   1. `RakeCommander::Options::Result`: makes the method to return a `Hash` with results,
+      #     as well as captures/moves the **leftovers** to their own keyed argument.
+      #   2. `RakeCommander::Options:Error`:
+      # @param options_parser [Option::Parser] the options parser ready for parsing.
+      # @return [Array<String>] the **leftovers** of the `OptionParser#parse` call.
+      def parse_options(argv = ARGV, &middleware)
+        options_parser(&middleware).parse(argv)
       end
 
       protected
 
-      def error_option(e, klass)
-        return false unless option_sym = klass.option_sym(e.message)
-        # puts klass
-        # puts e.message
-        #
-        # pp option_sym
-        # puts "Implicit shorts:"
-        # pp implicit_shorts.keys
-        options_hash(with_implicit: true)[option_sym]
-      end
-
+      # It allows to add a middleware block that is called during the parsing phase.
       # @return [OptionParser] the built options parser.
       def options_parser(&middleware)
         new_options_parser do |opts|
@@ -155,47 +118,31 @@ class RakeCommander
         OptionParser.new(&block)
       end
 
-      def install_help(opts_parser)
-        # unless options_hash.key?(:h) || options_hash.key?(:help)
-        #   opts.on_tail('-h', '--help', 'Prints this help') { puts opts; exit(0) }
-        # end
+      # The options indexed by the short and the name (so doubled up in the hash).
+      # @param with_implicit [Boolean] whether free implicit shorts of declared options should be included
+      #   among the keys (pointing to the specific option that has it implicit).
+      def options_hash(with_implicit: false)
+        @options_hash ||= {}
+        return @options_hash unless with_implicit
+        @options_hash.merge(implicit_shorts)
+      end
 
+      # This covers the gap where `OptionParser` auto-generates shorts out of option names.
+      # @note `OptionParser` implicitly generates a short for the option name. When defining
+      #   an option that uses this short, the short gets overriden/reused by the explicit option.
+      #   Otherwise, the short is actually available for the former option, regarldess you
+      #   specified a different short for it (i.e. both shorts, expicit and implicit, will work).
+      # @note for two options with same implicit free short, latest in order will take it, which
+      #   is what `OptionParser` will actually do.
+      # @return [Hash] with free shorts that are implicit to some option
+      def implicit_shorts
+        options.each_with_object({}) do |opt, implicit|
+          short = opt.short_implicit
+          implicit[short] = opt unless options_hash.key?(short)
+        end
       end
 
       private
-
-      # Expects a block that should do the final call to `#parse`
-      def options_parser_with_results(middleware)
-        result_defaults.tap do |result|
-          results_collector = proc do |value, default, short, name|
-            middleware&.call(value, default, short, name)
-            result[short] = value.nil?? default : value
-          end
-          options_parser = options_parser(&results_collector)
-          yield(options_parser)
-        end
-      end
-
-      # Based on `required` options, it sets the `default`
-      def result_defaults
-        {}.tap do |res_def|
-          options.select do |opt|
-            (options_with_defaults && opt.default?) \
-            || (opt.required? && opt.default?)
-          end.each do |opt|
-            res_def[opt.short] = opt.default
-          end
-        end
-      end
-
-      # It throws an exception if any of the required options
-      # is missing in results
-      def check_required_presence!(results)
-        missing = options.select(&:required?).reject do |opt|
-          results.key?(opt.short) || results.key?(opt.name)
-        end
-        raise RakeCommander::Options::MissingOption, missing unless missing.empty?
-      end
 
       # @todo check that all the elements are of `option_class`
       # @return [Array<RakeCommander::Option>]
@@ -215,17 +162,18 @@ class RakeCommander
       # Adds to `@options_hash` the option `opt`
       # @todo add `exception` parameter, to trigger an exception
       #   when `opt` name or short are taken (and override is `false`)
+      # @todo allow to specif if `:tail`, `:top` or `:base` (default)
       # @return [Boolean] wheter or not it succeeded adding the option.
       def add_to_options(opt, override: true)
-        if prev = options_hash[opt.short]
+        if sprev = options_hash[opt.short]
           return false unless override
-          puts "Warning: Overriding option with short '#{prev.short}' ('#{prev.name}')"
-          delete_from_options(prev)
+          puts "Warning: Overriding option '#{sprev.name}' with short '#{sprev.short}' ('#{opt.name}')"
+          delete_from_options(sprev)
         end
-        if prev = options_hash[opt.name]
+        if nprev = options_hash[opt.name]
           return false unless override
-          puts "Warning: Overriding option with name '#{prev.name}' ('#{prev.short}')"
-          delete_from_options(prev)
+          puts "Warning: Overriding option '#{nprev.short}' with name '#{nprev.name}' ('#{opt.short}')"
+          delete_from_options(nprev)
         end
         options_hash[opt.name] = options_hash[opt.short] = opt
         true
@@ -255,16 +203,7 @@ class RakeCommander
         end
       end
     end
-
-    def options(argv = ARGV)
-      @options ||= self.class.parse_options(argv, leftovers: options_leftovers)
-    end
-
-    def options_leftovers
-      @options_leftovers ||= []
-    end
   end
 end
 
-require_relative 'options/error'
 require_relative 'options/set'

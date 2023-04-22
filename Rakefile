@@ -3,6 +3,15 @@ require "rspec/core/rake_task"
 require "yard"
 require "redcarpet"
 
+# Install examples
+require_relative 'lib/rake-commander'
+Dir["examples/*_example.rb"].each {|file| require_relative file }
+RakeCommander.self_load
+# desc "Examples: Run examples (rake examples[basic] -- -h)"
+# task :examples, [:sample] do |_t, args|
+#   `bin/rake-dash 'examples:#{args[:sample]}'`
+# end
+
 desc "run the specs"
 RSpec::Core::RakeTask.new(:spec)
 
@@ -20,11 +29,6 @@ end
 desc "Yard: generate all the documentation"
 YARD::Rake::YardocTask.new(:doc) do |t|
   #t.files = ['lib/**/*.rb']
-end
-
-desc "Examples: Run examples (rake examples[basic] -- -h)"
-task :examples, [:sample] do |_t, args|
-  require_relative "examples/#{args[:sample]}"
 end
 
 task default: [:spec]

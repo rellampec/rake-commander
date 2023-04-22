@@ -1,9 +1,9 @@
 require_relative 'rake_context/wrapper'
+require_relative 'rake_context/patch'
 
 class RakeCommander
   module RakeTask
     NAMESPACE_DELIMITER = /:/.freeze
-    RAKE_END_COMMAND    = '--'.freeze
     INHERITABLE_ATTRS   = [:namespace].freeze
 
     class << self
@@ -23,14 +23,13 @@ class RakeCommander
       end
 
       # Does the final rake `task` definition
+      # @note this method is extended by some modules
+      #   1. `RakeCommander::Options::Result`: Ensure options are parsed before calling task
+      #   2. `RakeCommander::Options::Arguments`: `exit(0)` when `Rake` interprets the full `ARGV`
+      #     rather than stopping at the delimiter (`--`)
+      # @return [@see Rake::Task] same results as if you used `task :name {}` or `namespace :space {}`
       def install_task(&task_method)
         raise "Expected task_block." unless task_method
-
-        # ensure options are parsed before calling task
-        # and that ARGV is only parsed after `--`
-        # do an `exit(0)` right at the end
-        task_method = task_context(&task_method) if options?
-
         if namespaced?
           namespaced do
             rake.desc desc
@@ -99,6 +98,16 @@ class RakeCommander
         respond_to?(:task) ? "Usage: #{str_space}#{task} -- [options]" : nil
       end
 
+      protected
+
+      # Offer a wrapper to build the task conext througout all inheritance chain.
+      # @note
+      #   - This method offers children classes a way to add their on middleware.
+      # @return [Proc] our wrapped task block.
+      def task_context(&task_method)
+        task_method
+      end
+
       private
 
       # Split into `Array` the namespace based on `NAMESPACE_DELIMITER`
@@ -112,27 +121,6 @@ class RakeCommander
       def namespace_block(name, &block)
         rake.context do
           proc { namespace name, &block }
-        end
-      end
-
-      # Rake command ends at `--` (`RAKE_END_COMMAND`).
-      # We only want to parse the options that come afterwards
-      # @note
-      #   1. Without `ARGV` cut, it will throw `OptionParser::InvalidOption` error
-      #   2. **Work-around**: We also add an `exit(0)` at the end to prevent `Rake` chaining
-      #     option arguments as if they were actual tasks.
-      # @return [Proc]
-      def task_context(&task_method)
-        object = eval('self', task_method.binding, __FILE__, __LINE__)
-        return task_method unless object.is_a?(self)
-        proc do |*args|
-          argv = ARGV
-          if idx = argv.index(RAKE_END_COMMAND)
-            argv = argv[idx+1..-1]
-          end
-          object.options(argv)
-          task_method.call(*args)
-          exit(0)
         end
       end
     end

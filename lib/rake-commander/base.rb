@@ -14,7 +14,6 @@ class RakeCommander
 
         base.extend ClassMethods
         base.send :include, RakeTask
-
         base.send :include, Options
         #autoload_namespace_ignore "RakeCommander::Samples"
       end

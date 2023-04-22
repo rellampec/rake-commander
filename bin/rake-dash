@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+
+
+require "rake"
+puts "Extending Rake with Rake-Commander"
+require_relative File.join(__dir__, '../lib/rake-commander')
+
+Rake.application.run

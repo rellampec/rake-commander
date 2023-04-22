@@ -21,6 +21,11 @@ Or install it yourself as:
 ## Usage
 
 
+### Options Syntax & Parsing
+
+It supports most of options syntax of the native `OptionParser` but for one exception perhaps:
+  1. It does not support definitions NOR parsing of shortcuts with embedded argument (i.e. `-nNAME`).
+
 ## Development
 
 To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
