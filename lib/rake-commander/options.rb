@@ -165,14 +165,15 @@ class RakeCommander
       # @todo allow to specif if `:tail`, `:top` or `:base` (default)
       # @return [Boolean] wheter or not it succeeded adding the option.
       def add_to_options(opt, override: true)
+        name_ref = respond_to?(:name)? " (#{name})" : ''
         if sprev = options_hash[opt.short]
           return false unless override
-          puts "Warning: Overriding option '#{sprev.name}' with short '#{sprev.short}' ('#{opt.name}')"
+          puts "Warning#{name_ref}: Overriding option '#{sprev.name}' with short '#{sprev.short}' ('#{opt.name}')"
           delete_from_options(sprev)
         end
         if nprev = options_hash[opt.name]
           return false unless override
-          puts "Warning: Overriding option '#{nprev.short}' with name '#{nprev.name}' ('#{opt.short}')"
+          puts "Warning#{name_ref}: Overriding option '#{nprev.short}' with name '#{nprev.name}' ('#{opt.short}')"
           delete_from_options(nprev)
         end
         options_hash[opt.name] = options_hash[opt.short] = opt

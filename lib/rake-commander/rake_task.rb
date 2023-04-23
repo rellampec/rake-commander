@@ -1,5 +1,4 @@
 require_relative 'rake_context/wrapper'
-require_relative 'rake_context/patch'
 
 class RakeCommander
   module RakeTask
@@ -22,23 +21,11 @@ class RakeCommander
         @rake ||= RakeCommander::RakeContext::Wrapper.new
       end
 
-      # Does the final rake `task` definition
-      # @note this method is extended by some modules
-      #   1. `RakeCommander::Options::Result`: Ensure options are parsed before calling task
-      #   2. `RakeCommander::Options::Arguments`: `exit(0)` when `Rake` interprets the full `ARGV`
-      #     rather than stopping at the delimiter (`--`)
-      # @return [@see Rake::Task] same results as if you used `task :name {}` or `namespace :space {}`
-      def install_task(&task_method)
-        raise "Expected task_block." unless task_method
-        if namespaced?
-          namespaced do
-            rake.desc desc
-            rake.task task, &task_method
-          end
-        else
-          rake.desc desc
-          rake.task task, &task_method
-        end
+      # Give a description to the task
+      # @return [String] the description of the task
+      def desc(str = :not_used)
+        return @desc if str == :not_used
+        @desc = str.to_s
       end
 
       # Give a name to the task
@@ -48,19 +35,19 @@ class RakeCommander
         @task = name.to_sym
       end
 
-      # Give a description to the task
-      # @return [String] the description of the task
-      def desc(str = :not_used)
-        return @desc if str == :not_used
-        @desc = str.to_s
-      end
-
       # It can be hierarchical by using `NAMESPACE_DELIMITER`
       # @return [String] the namespace defined for this `RakeCommander` class.
       def namespace(name = :not_used)
         return @namespace if name == :not_used
         @namespace = namespace_str(name)
       end
+
+      # It gives the task full name (including namespacing)
+      # @return [String]
+      def task_fullname
+        "#{namespace}:#{task}"
+      end
+      alias_method :name, :task_fullname
 
       # Is this rake context namespaced?
       # @note Rake allows to namespace tasks (i.e. `task :"run:this"`)
@@ -79,6 +66,25 @@ class RakeCommander
           namespace_block(nm, &blk)
         end
         rake.namespace top, &block
+      end
+
+      # Does the final rake `task` definition
+      # @note this method is extended by some modules
+      #   1. `RakeCommander::Options::Result`: Ensure options are parsed before calling task
+      #   2. `RakeCommander::Options::Arguments`: `exit(0)` when `Rake` interprets the full `ARGV`
+      #     rather than stopping at the delimiter (`--`)
+      # @return [@see Rake::Task] same results as if you used `task :name {}` or `namespace :space {}`
+      def install_task(&task_method)
+        raise "Expected task_block." unless task_method
+        if namespaced?
+          namespaced do
+            rake.desc desc
+            rake.task task, &task_method
+          end
+        else
+          rake.desc desc
+          rake.task task, &task_method
+        end
       end
 
       protected

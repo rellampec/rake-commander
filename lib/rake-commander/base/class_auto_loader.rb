@@ -75,7 +75,7 @@ class RakeCommander
           !autoloaded_children.include?(child_class) && \
             !excluded_children.include?(child_class) && \
             autoload_class?(child_class)
-        end.sort
+        end
       end
 
       # It loads/creates a new instance of children classes pending to be loaded.

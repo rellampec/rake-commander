@@ -10,33 +10,26 @@ class RakeCommander
         def included(base)
           super(base)
           base.extend ClassMethods
-          Rake::Application.prepend RakeCommander::RakeContext::Patch::Application
         end
       end
 
       module ClassMethods
         include RakeCommander::Options::Name
 
-        # For a given method `meth` it gives the index of the argument
-        # named `arg_name`
-        # @return [Integer, NilClass] the position of `arg_name` in arguments.
-        def method_argument_idx(meth, arg_name)
-          arg_name = arg_name.to_sym
-          meth.parameters.each_with_index do |(type, name), i|
-            return i if name == arg_name
-          end
-        end
-
         # Configuration setting
         # Whether the additional arguments (extended options) managed by this gem
         # should be removed/consumed from `ARGV` before `Rake` processes option arguments.
         # @note
-        #   1. When `true` it **will enable the patch on `Rake::Application#init`**, provided that
-        #     `ARGV` is cropped before `Rake` identifies **tasks** and rake native **options**.
-        #     * Patch can be found in `RakeCommander::RakeContext::Patch` module.
-        #   2. When `false`, an implicit `exit(0)` is added at the end, as a work-around,
-        #     to prevent `Rake` chaining option arguments as if they were actual tasks.
-        # @note that this only refers to what comes after `RAKE_COMMAND_EXTENDED_OPTIONS_START` (`--`)
+        #   1. When `true` it **will enable**
+        #     * A **patch** on `Rake::Application`**, provided that `ARGV` is cropped
+        #       before `Rake` identifies **tasks** and rake native **options**.
+        #       Note that this specific patch only works if rake commander was loaded
+        #       BEFORE `Rake::Application.run` is invoked.
+        #   2. When `false`, an implicit `exit(0)` is added at the end of a rake task
+        #     defined via `RakeCommander`, as a work-around that prevents `Rake` from
+        #     chaining option arguments as if they were actual tasks.
+        # @note
+        #   1. This only refers to what comes after `RAKE_COMMAND_EXTENDED_OPTIONS_START` (`--`)
         # @return [Boolean]
         def argv_cropping_for_rake(value = :not_used)
           @argv_cropping_for_rake = true if @argv_cropping_for_rake.nil?
@@ -156,7 +149,8 @@ class RakeCommander
         end
 
         # It adds the missing argument to options that expect it.
-        # @note it uses `default` if present, and `nil` otherwise.
+        # @note
+        #  1. It uses `default` if present, and `nil` otherwise.
         # @param groups [@see #pair_symbols_with_strings]
         def insert_missing_argument_to_groups(groups, options)
           groups.each do |group|

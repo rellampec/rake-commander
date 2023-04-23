@@ -1,6 +1,8 @@
 class RakeCommander
   module RakeContext
     class Wrapper
+      include Rake::DSL
+      
       # Allows to interact with rake
       # @note this prevents subclass overlap methods to be used
       def context(object = global_instance, &block)

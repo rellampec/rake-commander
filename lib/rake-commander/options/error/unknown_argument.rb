@@ -12,7 +12,7 @@ class RakeCommander
         def to_message(value)
           case value
           when Array
-            to_message(value.join(', '))
+            to_message(value.map{|v| "'#{v}'"}.join(', '))
           else
             "These are unknown options: #{value}"
           end

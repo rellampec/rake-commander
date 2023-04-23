@@ -95,6 +95,16 @@ class RakeCommander
         end
       end
 
+      # @param klasses [Arrary<Class>] the classes to sort.
+      # @return [Arrary<Class>] the classes in hierarchy order.
+      def sort_classes(*klasses)
+        klasses.sort do |k_1, k_2|
+          next -1 if k_2 < k_1
+          next  1 if k_1 < k_2
+          0
+        end
+      end
+
       # Finds all child classes of the current class.
       # @param parent_class [Class] the parent class we want to find children of.
       # @param direct [Boolean] it will only include direct child classes.
@@ -103,18 +113,11 @@ class RakeCommander
       def descendants(parent_class: self, direct: false, scope: nil)
         scope ||= ObjectSpace.each_object(::Class)
         return [] if scope.empty?
-        scope.select do |klass|
-          klass < parent_class
-        end.sort do |k_1, k_2|
-          next -1 if k_2 < k_1
-          next  1 if k_1 < k_2
-          0
-        end.tap do |siblings|
-          if direct
-            siblings.reject! do |si|
-              siblings.any? {|s| si < s}
-            end
-          end
+        siblings = scope.select {|klass| klass < parent_class}
+        siblings = sort_classes(*siblings)
+        return siblings unless direct
+        siblings.reject! do |si|
+          siblings.any? {|s| si < s}
         end
       end
 
