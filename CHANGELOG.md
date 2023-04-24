@@ -2,10 +2,16 @@
 All notable changes to this project will be documented in this file.
 
 ## TO DO
+  - Option parsing Errors:
+    * to explicitly tell what task got the error
+    * configuration: allow to just print error message and do an `exit(1)` when there is an options error
+  - Add more supported type_coertions (i.e. `Symbol`)
   - Rake task parameters (see: https://stackoverflow.com/a/825832/4352306)
-  - Invoke `rake-dash` from `rake` (can't override `rake` executable; Rake gem update will override it)
   - Add `enhance` functionality (when a task is invoked it runs before it; declared with `task` as well)
-  - Configuration: allow to just print error message and do an `exit(1)` when there is an options error
+
+## DISCARDED IMPROVENTS
+  - Option to globally enable/disable the 2nd patch?
+    * That would make this gem completely useless.
 
 ## [0.2.1] - 2023-04-xx
 

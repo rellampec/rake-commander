@@ -20,7 +20,20 @@ class RakeCommander
     end
 
     module ClassMethods
+      # Loads children classes by keeping a cache.
       def self_load
+        autoload_children
+      end
+
+      # Clears track on any auto-loaded children
+      # @note required for reload.
+      def self_load_reset
+        clear_autoloaded_children
+      end
+
+      # Clears the cache of autoloaded children classes and loads them again.
+      def self_reload
+        self_load_reset
         autoload_children
       end
     end

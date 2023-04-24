@@ -61,6 +61,13 @@ class RakeCommander
         @autoloaded_children ||= []
       end
 
+      # Allows to reload
+      # @note it may be handy some times.
+      def clear_autoloaded_children
+        forget_class!(*autoloaded_children)
+        @autoloaded_children = []
+      end
+
       # Prevents already excluded childrent to enter into the loop again.
       def excluded_children
         @excluded_children ||= []
@@ -109,6 +116,13 @@ class RakeCommander
       # Add to known namespaces
       def known_class!(*classes)
         known_classes.concat(classes)
+        self
+      end
+
+      # Forget namespaces
+      def forget_class!(*classes)
+        @known_classes = known_classes - classes
+        self
       end
 
       # List all new namespaces

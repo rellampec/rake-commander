@@ -9,3 +9,5 @@ end
 
 require_relative 'rake-commander/version'
 require_relative 'rake-commander/custom'
+
+RakeCommander.self_load

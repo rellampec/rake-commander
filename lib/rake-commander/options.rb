@@ -20,33 +20,11 @@ class RakeCommander
     end
 
     module ClassMethods
-      # List of configured options
-      # @return [Array<RakeCommander::Option>]
-      def options
-        options_hash.values.uniq
-      end
-
-      # @return [Boolean] are there options defined?
-      def options?
-        !options.empty?
-      end
-
-      # Clears all the options.
-      def clear_options!
-        @options_hash = {}
-        self
-      end
-
-      # Allows to use a set of options
-      # @param override [Boolean] wheter existing options with same option name
-      #   should be overriden, may they clash
-      # @param options [Enumerable<RakeCommander::Option>]
-      def use_options(opts, override: true)
-        raise "Could not obtain list of RakeCommander::Option from #{opts.class}" unless opts = to_options(opts)
-        opts.each do |opt|
-          add_to_options(opt, override: override)
-        end
-        self
+      # Overrides the auto-generated banner
+      def banner(desc = :not_used)
+        return @banner = desc unless desc == :not_used
+        return @banner if @banner
+        return task_options_banner if respond_to?(:task_options_banner, true)
       end
 
       # Defines a new option or opens for edition an existing one if `reopen: true` is used.
@@ -73,11 +51,23 @@ class RakeCommander
         replace_in_options(ref, ref.merge(opt), override: override)
       end
 
-      # Overrides the auto-generated banner
-      def banner(desc = :not_used)
-        return @banner = desc unless desc == :not_used
-        return @banner if @banner
-        return task_options_banner if respond_to?(:task_options_banner, true)
+      # Explicitly installs the help of the options
+      # @note `OptionParser` already has `-h --help` as a native option.
+      def option_help
+        return false if options_hash.key?(:help) || options_hash.key?(:h)
+        option(:h, :help, 'Prints this help') { puts opts; exit(0) }
+      end
+
+      # Allows to use a set of options
+      # @param override [Boolean] wheter existing options with same option name
+      #   should be overriden, may they clash
+      # @param options [Enumerable<RakeCommander::Option>]
+      def use_options(opts, override: true)
+        raise "Could not obtain list of RakeCommander::Option from #{opts.class}" unless opts = to_options(opts)
+        opts.each do |opt|
+          add_to_options(opt, override: override)
+        end
+        self
       end
 
       # It parses the `ARGV`.
@@ -95,6 +85,23 @@ class RakeCommander
         options_parser(&middleware).parse(argv)
       end
 
+      # List of configured options
+      # @return [Array<RakeCommander::Option>]
+      def options
+        options_hash.values.uniq
+      end
+
+      # @return [Boolean] are there options defined?
+      def options?
+        !options.empty?
+      end
+
+      # Clears all the options.
+      def clear_options!
+        @options_hash = {}
+        self
+      end
+
       protected
 
       # It allows to add a middleware block that is called during the parsing phase.
@@ -102,8 +109,7 @@ class RakeCommander
       def options_parser(&middleware)
         new_options_parser do |opts|
           opts.banner = banner if banner
-          # Install help explicitly
-          option(:h, :help, 'Prints this help') { puts opts; exit(0) }
+          option_help
           free_shorts = implicit_shorts
 
           options.each do |opt|

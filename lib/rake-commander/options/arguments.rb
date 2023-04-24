@@ -24,7 +24,7 @@ class RakeCommander
         #     * A **patch** on `Rake::Application`**, provided that `ARGV` is cropped
         #       before `Rake` identifies **tasks** and rake native **options**.
         #       Note that this specific patch only works if rake commander was loaded
-        #       BEFORE `Rake::Application.run` is invoked.
+        #       BEFORE `Rake::Application#run` is invoked.
         #   2. When `false`, an implicit `exit(0)` is added at the end of a rake task
         #     defined via `RakeCommander`, as a work-around that prevents `Rake` from
         #     chaining option arguments as if they were actual tasks.
