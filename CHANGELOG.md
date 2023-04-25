@@ -6,8 +6,10 @@ All notable changes to this project will be documented in this file.
     * to explicitly tell what task got the error
     * configuration: allow to just print error message and do an `exit(1)` when there is an options error
   - Add more supported type_coertions (i.e. `Symbol`)
+    - Add support [for `ActiveRecord::Enum`](https://apidock.com/rails/ActiveRecord/Enum)
   - Rake task parameters (see: https://stackoverflow.com/a/825832/4352306)
   - Add `enhance` functionality (when a task is invoked it runs before it; declared with `task` as well)
+  - Add `no_short` option (which should give the result of that option with the option name key)
 
 ## DISCARDED IMPROVENTS
   - Option to globally enable/disable the 2nd patch?
@@ -35,6 +37,9 @@ All notable changes to this project will be documented in this file.
     - These are added automatically by `OptionParser`
   - `OptionParser` leftovers trigger an error by default.
     - This behaviour can be disabled or modified via callback/block by using `RakeCommander::Options:Error::error_on_leftovers`.
+  - Description auto **multi-line**
+    - Currently based on `RakeCommander::Options::Description::DESC_MAX_LENGTH`
+  - `RakeCommander::Options#remove_option`
 
 ### Fixed
   - `RakeCommander::Base::ClassAutoLoader`
@@ -44,10 +49,15 @@ All notable changes to this project will be documented in this file.
   - Boolean switch detection (pre-parse arguments) and parsing
     - It adds support for boolean option names such as `--[no-]verbose`
   - Error messaging. There were missing cases, specially with implicit short options.
+  - `RakeCommander::Options`
+    - `#option_reopen` fixed
+    - **Inheritance fixed**
 
 ### Changed
   - Development: examples invokation via `Rake`
   - Refactored `RakeCommander::Options` to acquire functionality through extension.
+  - `attr_inheritable` and `inheritable_class_var` are the new names of previous methods
+    - Behaviour has been changed, so you define if it should `dup` the variables, and you can pass a `block` to do the `dup` yourself. They won **NOT** `freeze` anymore, as we are mostly working at class level.
 
 ## [0.1.4] - 2023-04-20
 

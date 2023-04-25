@@ -12,8 +12,7 @@ class RakeCommander
         def included(base)
           super(base)
           base.extend ClassMethods
-          base.inheritable_attrs :error_on_leftovers, :leftovers_callback
-
+          base.attr_inheritable :error_on_leftovers, :leftovers_callback
         end
       end
 
@@ -59,7 +58,7 @@ class RakeCommander
           eklass = RakeCommander::Options::Error::InvalidArgument
           opt    = error_option(e, eklass)
           raise eklass, e, cause: nil unless opt&.argument_required?
-          msg    = "missing required argument: #{opt.name_hyphen} (#{opt.short_hyphen})"
+          msg = "missing required argument: #{opt.name_hyphen} (#{opt.short_hyphen})"
           raise RakeCommander::Options::Error::MissingArgument, msg, cause: nil
         end
 
@@ -70,8 +69,8 @@ class RakeCommander
         # @param e [OptionParser:Error] containing the original error `message`
         # @param eklass [RakeCommander::Options::ErrorRely::Class] the error class to retrive the option key
         # @return [RakeCommander::Option, NilClass]
-        def error_option(e, eklass)
-          return false unless option_sym = eklass.option_sym(e.message)
+        def error_option(err, eklass)
+          return false unless option_sym = eklass.option_sym(err.message)
           options_hash(with_implicit: true)[option_sym]
         end
 
@@ -80,7 +79,7 @@ class RakeCommander
         # @param results [Hash] the parsed options
         # @return [Hash] the results (same object)
         def manage_leftovers(leftovers, results)
-          results.tap do |results|
+          results.tap do |_r|
             next if leftovers.empty? || !error_on_leftovers
             eklass = RakeCommander::Options::Error::UnknownArgument
             raise eklass, leftovers unless block = @leftovers_callback

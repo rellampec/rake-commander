@@ -8,14 +8,14 @@ class RakeCommander
     class << self
       def included(base)
         super(base)
+        base.extend RakeCommander::Base::ClassHelpers
+        base.extend RakeCommander::Base::ClassInheritable
         base.extend ClassMethods
-        base.inheritable_attrs(*INHERITABLE_ATTRS)
+        base.attr_inheritable(*INHERITABLE_ATTRS)
       end
     end
 
     module ClassMethods
-      include RakeCommander::Base::ClassHelpers
-
       # The rake context wrapper (to invoke rake commands)
       def rake
         @rake ||= RakeCommander::RakeContext::Wrapper.new
@@ -103,8 +103,6 @@ class RakeCommander
         str_space = respond_to?(:namespace)? "#{namespace}:" : ''
         respond_to?(:task) ? "Usage: #{str_space}#{task} -- [options]" : nil
       end
-
-      protected
 
       # Offer a wrapper to build the task conext througout all inheritance chain.
       # @note

@@ -5,7 +5,7 @@ class RakeCommander
       #   argument is not an actual option. Name was kept for naming consistency
       #   with `OptionParser::InvalidArgument`
       class InvalidArgument < RakeCommander::Options::Error::Rely
-        option_regex /invalid argument: (?<option>.+)/i.freeze
+        option_regex(/invalid argument: (?<option>.+)/i.freeze)
       end
     end
   end

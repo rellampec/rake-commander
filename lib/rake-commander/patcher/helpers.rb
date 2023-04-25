@@ -6,7 +6,7 @@ class RakeCommander
       # @return [Integer, NilClass] the position of `arg_name` in parameters.
       def method_argument_idx(meth, arg_name)
         arg_name = arg_name.to_sym
-        meth.parameters.each_with_index do |(type, name), i|
+        meth.parameters.each_with_index do |(_type, name), i|
           return i if name == arg_name
         end
       end

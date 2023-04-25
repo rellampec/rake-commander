@@ -5,7 +5,7 @@ class RakeCommander
         def included(base)
           super(base)
           base.extend ClassMethods
-          base.inheritable_attrs :options_with_defaults
+          base.attr_inheritable :options_with_defaults
         end
       end
 

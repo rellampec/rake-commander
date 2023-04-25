@@ -1,7 +1,7 @@
 class RakeCommander
   module Base
     module ClassHelpers
-      NOT_USED = :no_used!.freeze
+      NOT_USED = :not_used!
 
       # Helper to determine if a paramter has been used
       # @note to effectivelly use this helper, you should initialize your target
@@ -65,15 +65,6 @@ class RakeCommander
         end.join("")
       end
 
-      # Helper to create an instance variable `name`
-      # @param [String, Symbol] the name of the variable
-      # @reutrn [String] the name of the created instance variable
-      def instance_variable_name(name)
-        str = name.to_s
-        str = "@#{str}" unless str.start_with?("@")
-        str
-      end
-
       # If the class for `name` exists, it returns it. Otherwise it generates it.
       # @param name [String, Symbol] the name of the new class
       # @param inherits [Class] the parent class to _inherit_ from
@@ -126,45 +117,6 @@ class RakeCommander
       # @return [Boolean] `true` if the current class has child classes, and `false` otherwise.
       def descendants?(parent_class: self, direct: false)
         !descendants(parent_class: parent_class, direct: direct).empty?
-      end
-
-      # Keeps track on class instance variables that should be inherited by child classes.
-      # @note
-      #   - subclasses will inherit the value as is at that moment
-      #   - any change afterwards will be only on the specific class (in line with class instance variables)
-      #   - adapted from https://stackoverflow.com/a/10729812/4352306
-      # TODO: this separates the logic of the method to the instance var. Think if would be possible to join them somehow.
-      def inheritable_class_vars(*vars)
-        @inheritable_class_vars ||= [:inheritable_class_vars]
-        @inheritable_class_vars += vars
-      end
-
-      # Builds the attr_reader and attr_writer of `attrs` and registers the associated instance variable as inheritable.
-      def inheritable_attrs(*attrs, add_accessors: false)
-        if add_accessors
-          attrs.each do |attr|
-            class_eval <<-RUBY, __FILE__, __LINE__ + 1
-              class << self; attr_accessor :#{attr} end
-            RUBY
-          end
-        end
-        inheritable_class_vars(*attrs)
-      end
-
-      # This callback method is called whenever a subclass of the current class is created.
-      # @note
-      #   - values of the instance variables are copied as they are (no dups or clones)
-      #   - the above means: avoid methods that change the state of the mutable object on it
-      #   - mutating methods would reflect the changes on other classes as well
-      #   - therefore, `freeze` will be called on the values that are inherited.
-      def inherited(subclass)
-        super.tap do
-          inheritable_class_vars.each do |var|
-            instance_var = instance_variable_name(var)
-            value        = instance_variable_get(instance_var)
-            subclass.instance_variable_set(instance_var, value.freeze)
-          end
-        end
       end
     end
   end

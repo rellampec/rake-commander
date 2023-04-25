@@ -10,15 +10,14 @@ class RakeCommander
           end
 
           def patch_prepend(_invoked_by)
-            if target_defined?
-              Rake::Application.prepend Patch
-            end
+            return unless target_defined?
+            Rake::Application.prepend Patch
           end
 
           def target_defined?
-            defined?(target).tap do |present|
-              puts "Warning (#{self}): undefined target #{target}" unless present
-            end
+            return true if defined?(target)
+            puts "Warning (#{self}): undefined target #{target}"
+            false
           end
         end
 
@@ -33,8 +32,8 @@ class RakeCommander
           #   * So by itself alone it allows to use `raked` executable that this gem provides.
           def run(argv = ARGV)
             rake_comm_debug "R U N  !", "\n", num: 1, pid: true
-            rake_comm_debug "  ---> ARGV: [#{argv.map{|a| "'#{a}'"}.join(', ')}]"
-            rake_comm_debug "  ---> Command: #{$0}"
+            rake_comm_debug "  ---> ARGV: [#{argv.map {|a| "'#{a}'"}.join(', ')}]"
+            rake_comm_debug "  ---> Command: #{$PROGRAM_NAME}"
             @rake_commander_run_argv_patch = true unless instance_variable_defined?(:@rake_commander_run_argv_patch)
             RakeCommander.self_load
             super(RakeCommander.argv_rake_native_arguments(argv))

@@ -23,9 +23,9 @@ class RakeCommander
       end
 
       def rake_comm_debug_random_object_id
-        return false if !!@rake_comm_debug_random_object_id
+        return false if @rake_comm_debug_random_object_id
         @rake_comm_debug_random_object_id = Array(1..20).sample.times.map do |i|
-          "#{i}".tap {|str| str.object_id}
+          i.to_s.tap(&:object_id)
         end
         true
       end

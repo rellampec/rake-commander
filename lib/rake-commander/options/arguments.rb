@@ -158,17 +158,24 @@ class RakeCommander
             opt_ref = args.shift
             next unless args.empty?
             next unless opt_ref.is_a?(Symbol)
-            unless opt = options[opt_ref]
-              # It might be `--no-option-name`
-              next unless match   = opt_ref.to_s.match(BOOLEAN_ARGUMENT)
-              next unless opt_ref = match[:option]
-              next unless opt     = options[opt_ref.to_sym]
-              next unless opt.boolean_name?
-            end
+            next unless opt = _retrieve_option_ref(opt_ref, options)
             next unless opt.argument?
             next group.push(opt.default) if opt.default?
             group.push(nil)
           end
+        end
+
+        # Retrieve the option based on `ref`
+        # @note It might be `--no-option-name`
+        # @return [RakeCommander::Option, NilClass]
+        def _retrieve_option_ref(opt_ref, options)
+          opt = options[opt_ref]
+          return opt if     opt
+          return nil unless match   = opt_ref.to_s.match(BOOLEAN_ARGUMENT)
+          return nil unless opt_ref = match[:option]
+          return nil unless opt     = options[opt_ref.to_sym]
+          return nil unless opt.boolean_name?
+          opt
         end
 
         # @return [Array<Array>] where the first element of each `Array` is a symbol

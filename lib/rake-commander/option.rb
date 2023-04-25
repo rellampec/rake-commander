@@ -3,13 +3,16 @@ class RakeCommander
   class Option < @option_struct
     extend RakeCommander::Base::ClassHelpers
     extend RakeCommander::Options::Name
+    include RakeCommander::Options::Description
 
     attr_reader :name_full, :desc, :default
 
     # @param sample [Boolean] allows to skip the `short` and `name` validations
-    def initialize(short = nil, name = nil, *args, sample: false, **kargs, &block)
-      short ||= kargs[:short]
-      name  ||= kargs[:name]
+    def initialize(*args, sample: false, **kargs, &block)
+      name, short = kargs.values_at(:name, :short)
+      short ||= capture_arguments_short!(args)
+      name  ||= capture_arguments_name!(args, sample_n_short: sample && short)
+
       unless sample
         raise ArgumentError, "A short of one letter should be provided. Given: #{short}" unless self.class.valid_short?(short)
         raise ArgumentError, "A name should be provided. Given: #{name}" unless  self.class.valid_name?(name)
@@ -28,16 +31,17 @@ class RakeCommander
 
     # Makes a copy of this option
     # @return [RakeCommander::Option]
-    def clone(**kargs, &block)
+    def dup(**kargs, &block)
       block ||= original_block
-      self.class.new(**clone_key_arguments.merge(kargs), &block)
+      self.class.new(**dup_key_arguments.merge(kargs), &block)
     end
+    alias_method :deep_dup, :dup
 
     # Creates a new option, result of merging this `opt` with this option,
     # @return [RakeCommander::Option] where opt has been merged
     def merge(opt)
       raise "Expecting RakeCommander::Option. Given: #{opt.class}" unless opt.is_a?(RakeCommander::Option)
-      clone(**opt.clone_key_arguments, &opt.original_block)
+      dup(**opt.dup_key_arguments, &opt.original_block)
     end
 
     # @return [Boolean] whether this option is required.
@@ -124,28 +128,24 @@ class RakeCommander
 
     protected
 
+    attr_reader :original_block
+
     # @return [Hash] keyed arguments to create a new object
-    def clone_key_arguments
+    def dup_key_arguments
       {}.tap do |kargs|
         kargs.merge!(short:    short.dup.freeze)      if short
         kargs.merge!(name:     name_full.dup.freeze)  if name_full
         kargs.merge!(desc:     desc.dup)              if desc
-        kargs.merge!(required: required?)
         kargs.merge!(default:  default.dup)           if default?
+        kargs.merge!(required: required?)
       end
-    end
-
-    def original_block
-      @original_block
     end
 
     # @return [Array<Variant>]
     def switch_args(implicit_short: false)
       configure_other
       args = [short_hyphen, name_hyphen]
-      if str = switch_desc(implicit_short: implicit_short)
-        args << str
-      end
+      args.push(*switch_desc(implicit_short: implicit_short))
       args << type_coertion if type_coertion
       args
     end
@@ -162,11 +162,14 @@ class RakeCommander
       end
     end
 
-    def switch_desc(implicit_short: false)
+    # @note in `OptionParser` you can multiline the description with alignment
+    #   by providing multiple strings.
+    # @return [Array<String>]
+    def switch_desc(implicit_short: false, line_width: DESC_MAX_LENGTH)
       ishort = implicit_short ? "( -#{short_implicit} ) " : ''
-      val = "#{required_desc}#{ishort}#{desc}#{default_desc}"
-      return nil if val.empty?
-      val
+      str    = "#{required_desc}#{ishort}#{desc}#{default_desc}"
+      return [] if str.empty?
+      string_to_lines(str, max: line_width)
     end
 
     def required_desc
@@ -182,6 +185,28 @@ class RakeCommander
       str
     end
 
+    # Helper to figure out the option short from args
+    # @note if found it removes it from args.
+    # @return [String, Symbol, NilClass]
+    def capture_arguments_short!(args)
+      short = nil
+      short ||= self.class.capture_arguments_short!(args, symbol: true)
+      short ||= self.class.capture_arguments_short!(args, symbol: true, strict: false)
+      short ||= self.class.capture_arguments_short!(args)
+      short ||= self.class.capture_arguments_short!(args, strict: false)
+    end
+
+    # Helper to figure out the option name from args
+    # @note if found it removes it from args.
+    # @return [String, Symbol, NilClass]
+    def capture_arguments_name!(args, sample_n_short: false)
+      short ||= self.class.capture_arguments_name!(args, symbol: true)
+      short ||= self.class.capture_arguments_name!(args, symbol: true, strict: false)
+      short ||= self.class.capture_arguments_name!(args)
+      short ||= self.class.capture_arguments_name!(args, strict: false) unless sample_n_short
+    end
+
+    # The remaining `args` received in the initialization
     def other_args(*args)
       @other_args ||= []
       if args.empty?

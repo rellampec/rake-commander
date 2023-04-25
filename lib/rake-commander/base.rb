@@ -1,4 +1,6 @@
+require_relative 'base/object_helpers'
 require_relative 'base/class_helpers'
+require_relative 'base/class_inheritable'
 require_relative 'base/class_auto_loader'
 require_relative 'rake_task'
 require_relative 'options'
@@ -8,7 +10,6 @@ class RakeCommander
     class << self
       def included(base)
         super(base)
-        base.extend RakeCommander::Base::ClassHelpers
         base.extend RakeCommander::Base::ClassAutoLoader
         base.autoloads_children_of RakeCommander
 

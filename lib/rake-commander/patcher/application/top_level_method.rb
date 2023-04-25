@@ -10,13 +10,14 @@ class RakeCommander
           end
 
           def patch_prepend(_invoked_by)
-            Rake::Application.prepend Patch if target_defined?
+            return unless target_defined?
+            Rake::Application.prepend Patch
           end
 
           def target_defined?
-            defined?(target).tap do |present|
-              puts "Warning (#{self}): undefined target #{target}" unless present
-            end
+            return true if defined?(target)
+            puts "Warning (#{self}): undefined target #{target}"
+            false
           end
         end
 
@@ -34,12 +35,8 @@ class RakeCommander
           def top_level
             unless @rake_commander_run_argv_patch
               @rake_commander_run_argv_patch = true
-              rake_comm_debug "R A K E   R E L A U N C H   ( p a t c h    i n a c t i v e )", "\n", num: 2, pid: true
-              rake_comm_debug "  ---> Known tasks: #{tasks.map(&:name).join(", ")}"
               RakeCommander.relaunch_rake_application
-              rake_comm_debug "T e r m i n a t i n g   R U N", "\n", num: 3, pid: true
-              exit(0)
-              raise "(run)  S h o u l d   N O T   r e a c h   t h i s   p o i n t  !!!"
+              # Should not reach this point
             end
             rake_comm_debug "T O P   L E V E L   ( p a t c h    a c t i v e )", "\n", num: 2, pid: true
             rake_comm_debug "  ---> Known tasks: #{tasks.map(&:name).join(", ")}"
@@ -54,11 +51,15 @@ class RakeCommander
           # dependency. Apparently some tasks of some gems are installed at `require` run-time.
           # This requires to keep known tasks when we switch the application.
           def relaunch_rake_application
-            prev_rake_app    = Rake.application
+            prev_rake_app = Rake.application
+            rake_comm_debug "R A K E   R E L A U N C H   ( p a t c h    i n a c t i v e )", "\n", num: 2, pid: true
+            rake_comm_debug "  ---> Known tasks: #{prev_rake_app.tasks.map(&:name).join(", ")}"
             Rake.application = Rake::Application.new
             rake_comm_debug "N e w   R a k e  A p p", "\n", num: 4, pid: true
             RakeCommander.self_load_reset
             Rake.application.run #RakeCommander.argv_rake_native_arguments(ARGV)
+            rake_comm_debug "T e r m i n a t i n g   R U N", "\n", num: 3, pid: true
+            exit(0)
           end
 
           private

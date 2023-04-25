@@ -1,7 +1,7 @@
 class RakeCommander
   module Options
     module Name
-      BOOLEAN_TOKEN       = '[no-]'
+      BOOLEAN_TOKEN       = '[no-]'.freeze
       # Substitions
       HYPHEN_START_REGEX  = /^-+/.freeze
       HYPEN_REGEX         = /-+/.freeze
@@ -34,29 +34,59 @@ class RakeCommander
       # @param strict [Boolean] whether hyphen is required when declaring an option `short`
       # @return [Boolean]
       def valid_short?(value, strict: false)
-        return false unless value.respond_to?(:to_s) && !value.to_s.empty?
-        return false unless !strict || single_hyphen(value)
-        short_sym(value).to_s.length == 1
+        return false unless value.respond_to?(:to_s)
+        value = value.to_s.strip
+        return false if value.empty?
+        return false if strict && !single_hyphen?(value)
+        value = value.gsub(HYPHEN_START_REGEX, '')
+        value.length == 1
       end
 
       # @param strict [Boolean] whether hyphen is required when declaring an option `name`
       # @return [Boolean]
       def valid_name?(value, strict: false)
-        return false unless value.respond_to?(:to_s) && !value.to_s.empty?
-        return false unless !strict || double_hyphen?(value)
+        return false unless value.respond_to?(:to_s)
+        value = value.to_s.strip
+        return false if value.empty?
+        return false if strict && !double_hyphen?(value)
         name_sym(value).to_s.length > 1
       end
 
-      # @param strict [Boolean] whether hyphen is required when declaring an option `short`
-      # @return [Boolean] whether `value` is an hyphened option `short`
-      def short_hyphen?(value, strict: false)
-        short?(value, strict: strict) && single_hyphen(value)
+      # Modifies `args` and returns the short candidate
+      # @param args [Array<String, Symbol>]
+      # @return [String, Symbol] the short candidate
+      def capture_arguments_short!(args, strict: true, symbol: false)
+        capture_argument_with!(args) do |arg|
+          next false unless arg.is_a?(String) || arg.is_a?(Symbol)
+          next false     if symbol && !arg.is_a?(Symbol)
+          valid_short?(arg, strict: strict)
+        end
       end
 
-      # @param strict [Boolean] whether hyphen is required when declaring an option `name`
-      # @return [Boolean] whether `value` is an hyphened option `name`
-      def name_hyphen?(value, strict: false)
-        name?(value, strict: strict) && double_hyphen?(value)
+      # Modifies `args` and returns the name candidate
+      # @param args [Array<String, Symbol>]
+      # @return [String, Symbol] the name candidate
+      def capture_arguments_name!(args, strict: true, symbol: false)
+        capture_argument_with!(args) do |arg|
+          next false unless arg.is_a?(String) || arg.is_a?(Symbol)
+          next false     if symbol && !arg.is_a?(Symbol)
+          valid_name?(arg, strict: strict)
+        end
+      end
+
+      # Modifies `args` and returns the arg candidate
+      # @param args [Array<String, Symbol>]
+      # @return [String, Symbol, NilClass] the arg candidate
+      def capture_argument_with!(args)
+        raise ArgumentError, "Expecting Array. Given: #{args.class}" unless args.is_a?(Array)
+        args.dup.find.with_index do |arg, i|
+          yield(arg).tap do |valid|
+            next unless valid
+            args.delete(i)
+            return arg
+          end
+        end
+        nil
       end
 
       # Converter

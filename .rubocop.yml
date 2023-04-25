@@ -22,14 +22,16 @@ Metrics/ModuleLength:
 Metrics/AbcSize:
   Max: 50
 Metrics/CyclomaticComplexity:
-  Max: 15
+  Max: 10
 Metrics/PerceivedComplexity:
-  Max: 15
+  Max: 10
 
 ParameterLists:
   Max: 5
   CountKeywordArgs: false
 
+Style/Alias:
+  EnforcedStyle: prefer_alias_method
 Style/StringLiterals:
   Enabled: false
 Style/FrozenStringLiteralComment:
@@ -51,12 +53,8 @@ Style/ClassAndModuleChildren:
 Style/OptionalBooleanParameter:
   Enabled: false
 
-Layout/SpaceInsideHashLiteralBraces:
-  Enabled: false
-Layout/SpaceInsideBlockBraces:
-  Enabled: false
-Layout/SpaceAroundOperators:
-  Enabled: false
+Layout/HashAlignment:
+  EnforcedColonStyle: table
 Layout/ExtraSpacing:
   AllowForAlignment: true
 Layout/AccessModifierIndentation:
@@ -65,6 +63,12 @@ Layout/DotPosition:
   EnforcedStyle: trailing
 Layout/MultilineMethodCallIndentation:
   EnforcedStyle: indented
+Layout/SpaceInsideHashLiteralBraces:
+  Enabled: false
+Layout/SpaceInsideBlockBraces:
+  Enabled: false
+Layout/SpaceAroundOperators:
+  Enabled: false
 Layout/FirstHashElementIndentation:
   Enabled: false
 Layout/EmptyLineAfterGuardClause:
