@@ -75,7 +75,7 @@ The **two main problems** to deal with are:
   1. Rake has it's own `OptionsParser`. If any of your rake `task` options matches any of those, you will be unintentionally invoking `rake` functionality.
   2. Let's say you require/load `rake-commander` in a `Rakefile`. By the time rake commander is loaded, `rake` has already collected as `top_level_tasks` the arguments of your task options; so those that do not start with dash `-` ([see private method `collect_command_line_tasks` in `Rake::Application`](https://github.com/ruby/rake/blob/48e798484babf725b0562cc417986da513e5d0ae/lib/rake/application.rb#L782)).
 
-This is also true when you invoke `rake` via _shell_ from within another task:
+This is also true when you invoke `rake` via _shell_ from within another task.
 
 **Example**
 

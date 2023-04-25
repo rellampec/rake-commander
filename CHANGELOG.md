@@ -3,8 +3,8 @@ All notable changes to this project will be documented in this file.
 
 ## TO DO
   - Option parsing Errors:
-    * to explicitly tell what task got the error
-    * configuration: allow to just print error message and do an `exit(1)` when there is an options error
+    * configuration: allow to optionally just print error message and do an `exit(1)` when there is an options error
+      (`rake` just exits on OptionParser error)
   - Add more supported type_coertions (i.e. `Symbol`)
     - Add support [for `ActiveRecord::Enum`](https://apidock.com/rails/ActiveRecord/Enum)
   - Rake task parameters (see: https://stackoverflow.com/a/825832/4352306)
@@ -40,6 +40,8 @@ All notable changes to this project will be documented in this file.
   - Description auto **multi-line**
     - Currently based on `RakeCommander::Options::Description::DESC_MAX_LENGTH`
   - `RakeCommander::Options#remove_option`
+  - `RakeCommander::Options::Error::Base` and children can be raised using different methods (see `RakeCommander::Options::Error` for examples).
+    - The **task** `name` that raised the error is included in the message.
 
 ### Fixed
   - `RakeCommander::Base::ClassAutoLoader`

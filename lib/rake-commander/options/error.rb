@@ -1,6 +1,7 @@
-require_relative 'error/rely'
+require_relative 'error/base'
 require_relative 'error/missing_argument'
 require_relative 'error/invalid_argument'
+require_relative 'error/invalid_option'
 require_relative 'error/missing_option'
 require_relative 'error/unknown_argument'
 
@@ -49,17 +50,21 @@ class RakeCommander
             manage_leftovers(leftovers, results)
             check_required_presence(results)
           end
+        rescue OptionParser::InvalidOption => e
+          eklass = RakeCommander::Options::Error::InvalidOption
+          raise eklass.new(e, from: self), nil, cause: nil
         rescue OptionParser::MissingArgument => e
           eklass = RakeCommander::Options::Error::MissingArgument
           opt    = error_option(e, eklass)
           msg    = opt ? "missing required argument: #{opt.name_hyphen} (#{opt.short_hyphen})" : e.message
-          raise eklass, msg, cause: nil
+          raise eklass.new(from: self), msg, cause: nil
         rescue OptionParser::InvalidArgument => e
           eklass = RakeCommander::Options::Error::InvalidArgument
           opt    = error_option(e, eklass)
-          raise eklass, e, cause: nil unless opt&.argument_required?
-          msg = "missing required argument: #{opt.name_hyphen} (#{opt.short_hyphen})"
-          raise RakeCommander::Options::Error::MissingArgument, msg, cause: nil
+          raise eklass.new(e, from: self), nil, cause: nil unless opt&.argument_required?
+          eklass = RakeCommander::Options::Error::MissingArgument
+          msg = "missing required argument in option: #{opt.name_hyphen} (#{opt.short_hyphen})"
+          raise eklass.new(from: self), msg, cause: nil
         end
 
         protected
@@ -67,12 +72,14 @@ class RakeCommander
         # Helper to retrieve an existing `RakeCommander::Option` out of a
         # `OptionParser` error.
         # @param e [OptionParser:Error] containing the original error `message`
-        # @param eklass [RakeCommander::Options::ErrorRely::Class] the error class to retrive the option key
+        # @param eklass [RakeCommander::Options::Error:Base::Class] the error class to retrive the option key
         # @return [RakeCommander::Option, NilClass]
         def error_option(err, eklass)
           return false unless option_sym = eklass.option_sym(err.message)
           options_hash(with_implicit: true)[option_sym]
         end
+
+        private
 
         # It implements the logic defined by `error_on_leftovers`.
         # @param leftovers [Array<String>]
@@ -82,12 +89,10 @@ class RakeCommander
           results.tap do |_r|
             next if leftovers.empty? || !error_on_leftovers
             eklass = RakeCommander::Options::Error::UnknownArgument
-            raise eklass, leftovers unless block = @leftovers_callback
-            raise eklass, leftovers if     block.call(leftovers, results)
+            raise eklass.new(leftovers, from: self) unless block = @leftovers_callback
+            raise eklass.new(leftovers, from: self) if     block.call(leftovers, results)
           end
         end
-
-        private
 
         # It throws an exception if any of the required options
         # is missing in results
@@ -95,7 +100,7 @@ class RakeCommander
           missing = options.select(&:required?).reject do |opt|
             results.key?(opt.short) || results.key?(opt.name)
           end
-          raise RakeCommander::Options::Error::MissingOption, missing unless missing.empty?
+          raise RakeCommander::Options::Error::MissingOption.new(missing, from: self) unless missing.empty?
         end
       end
     end

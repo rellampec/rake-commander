@@ -58,7 +58,7 @@ class RakeCommander
       def capture_arguments_short!(args, strict: true, symbol: false)
         capture_argument_with!(args) do |arg|
           next false unless arg.is_a?(String) || arg.is_a?(Symbol)
-          next false     if symbol && !arg.is_a?(Symbol)
+          next false if symbol && !arg.is_a?(Symbol)
           valid_short?(arg, strict: strict)
         end
       end
@@ -69,7 +69,7 @@ class RakeCommander
       def capture_arguments_name!(args, strict: true, symbol: false)
         capture_argument_with!(args) do |arg|
           next false unless arg.is_a?(String) || arg.is_a?(Symbol)
-          next false     if symbol && !arg.is_a?(Symbol)
+          next false if symbol && !arg.is_a?(Symbol)
           valid_name?(arg, strict: strict)
         end
       end

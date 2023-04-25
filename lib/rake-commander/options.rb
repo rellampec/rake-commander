@@ -107,7 +107,7 @@ class RakeCommander
       # @return [OptionParser] the built options parser.
       def options_parser(&middleware)
         new_options_parser do |opts|
-          opts.banner = banner if banner
+          opts.banner = banner          if banner
           option_help(opts)
           free_shorts = implicit_shorts
 

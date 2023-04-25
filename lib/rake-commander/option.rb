@@ -9,16 +9,8 @@ class RakeCommander
 
     # @param sample [Boolean] allows to skip the `short` and `name` validations
     def initialize(*args, sample: false, **kargs, &block)
-      name, short = kargs.values_at(:name, :short)
-      short ||= capture_arguments_short!(args)
-      name  ||= capture_arguments_name!(args, sample_n_short: sample && short)
-
-      unless sample
-        raise ArgumentError, "A short of one letter should be provided. Given: #{short}" unless self.class.valid_short?(short)
-        raise ArgumentError, "A name should be provided. Given: #{name}" unless  self.class.valid_name?(name)
-      end
-
-      @name_full = name.freeze
+      name, short = capture_arguments_short_n_name!(args, kargs, sample: sample)
+      @name_full  = name.freeze
       super(short.freeze, @name_full)
       @default        = kargs[:default]  if kargs.key?(:default)
       @desc           = kargs[:desc]     if kargs.key?(:desc)
@@ -185,6 +177,21 @@ class RakeCommander
       str
     end
 
+    # Helper to simplify `short` and `name` capture from arguments and keyed arguments.
+    # @return [Array<Symbol, String>] the pair `[short, name]`
+    def capture_arguments_short_n_name(args, kargs, sample: false)
+      name, short = kargs.values_at(:name, :short)
+      short ||= capture_arguments_short!(args)
+      name  ||= capture_arguments_name!(args, sample_n_short: sample && short)
+
+      unless sample
+        raise ArgumentError, "A short of one letter should be provided. Given: #{short}" unless self.class.valid_short?(short)
+        raise ArgumentError, "A name should be provided. Given: #{name}" unless  self.class.valid_name?(name)
+      end
+
+      [short, name]
+    end
+
     # Helper to figure out the option short from args
     # @note if found it removes it from args.
     # @return [String, Symbol, NilClass]
@@ -193,17 +200,18 @@ class RakeCommander
       short ||= self.class.capture_arguments_short!(args, symbol: true)
       short ||= self.class.capture_arguments_short!(args, symbol: true, strict: false)
       short ||= self.class.capture_arguments_short!(args)
-      short ||= self.class.capture_arguments_short!(args, strict: false)
+      short || self.class.capture_arguments_short!(args, strict: false)
     end
 
     # Helper to figure out the option name from args
     # @note if found it removes it from args.
     # @return [String, Symbol, NilClass]
     def capture_arguments_name!(args, sample_n_short: false)
-      short ||= self.class.capture_arguments_name!(args, symbol: true)
-      short ||= self.class.capture_arguments_name!(args, symbol: true, strict: false)
-      short ||= self.class.capture_arguments_name!(args)
-      short ||= self.class.capture_arguments_name!(args, strict: false) unless sample_n_short
+      name = nil
+      name ||= self.class.capture_arguments_name!(args, symbol: true)
+      name ||= self.class.capture_arguments_name!(args, symbol: true, strict: false)
+      name ||= self.class.capture_arguments_name!(args)
+      name || self.class.capture_arguments_name!(args, strict: false) unless sample_n_short
     end
 
     # The remaining `args` received in the initialization
