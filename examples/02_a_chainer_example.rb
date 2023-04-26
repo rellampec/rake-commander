@@ -62,6 +62,7 @@ class RakeCommander::Custom::Chainer < RakeCommander
     "(PID: #{Process.pid} ++ Thread: #{Thread.current.object_id})"
   end
 
+  # https://stackoverflow.com/a/37329716/4352306
   def shell(cmd, method: :system)
     method = method.to_sym
     case method
