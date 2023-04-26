@@ -148,9 +148,10 @@ class RakeCommander
           end
         end
 
-        # It adds the missing argument to options that expect it.
+        # It ADDS  the missing argument to options that expect it.
         # @note
-        #  1. It uses `default` if present, and `nil` otherwise.
+        #  1. It uses `default` if present
+        #  2. Otherwise it uses `nil`, but only if required (not when optional).
         # @param groups [@see #pair_symbols_with_strings]
         def insert_missing_argument_to_groups(groups, options)
           groups.each do |group|
@@ -161,6 +162,7 @@ class RakeCommander
             next unless opt = _retrieve_option_ref(opt_ref, options)
             next unless opt.argument?
             next group.push(opt.default) if opt.default?
+            next unless opt.argument_required?
             group.push(nil)
           end
         end
