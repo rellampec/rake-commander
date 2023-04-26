@@ -3,7 +3,7 @@ class RakeCommander::Custom::Chainer < RakeCommander
 
   # Symbol Array
   SHELL_METHODS = %I[system back_quotes x spawn exec fork_exec pipe].freeze
-  TARGET_TASK   = 'examples:chained'
+  TARGET_TASK   = 'examples:chained'.freeze
 
   desc "Uses rake (or raked) to invoke #{TARGET_TASK}"
   task :chainer

@@ -1,5 +1,5 @@
 class RakeCommander::Custom::ChainerPlus < RakeCommander::Custom::Chainer
-  TARGET_TASK = 'examples:chained_plus'
+  TARGET_TASK = 'examples:chained_plus'.freeze
 
   desc "Uses rake (or raked) to invoke #{TARGET_TASK}"
   task :chainer_plus

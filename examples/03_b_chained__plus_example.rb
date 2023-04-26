@@ -7,7 +7,7 @@ class RakeCommander::Custom::ChainedPlus < RakeCommander::Custom::Chained
   # Move option to the end, make **required** the argument (SOMETHING) as well as the option itself.
   option :s, '--say SOMETHING', "It says 'something'", required: true
 
-  error_on_options error: RakeCommander::Options::Error::MissingArgument do |err, argv, results, leftovers|
+  error_on_options error: RakeCommander::Options::Error::MissingArgument do |err, _argv, results, _leftovers|
     msg  = "Results when 'missing argument' error was raised"
     msg << " on option '#{err.option.name_full}'" if err.option
     puts msg
