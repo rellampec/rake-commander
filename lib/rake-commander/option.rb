@@ -9,7 +9,7 @@ class RakeCommander
 
     # @param sample [Boolean] allows to skip the `short` and `name` validations
     def initialize(*args, sample: false, **kargs, &block)
-      name, short = capture_arguments_short_n_name!(args, kargs, sample: sample)
+      short, name = capture_arguments_short_n_name!(args, kargs, sample: sample)
       @name_full  = name.freeze
       super(short.freeze, @name_full)
       @default        = kargs[:default]  if kargs.key?(:default)
@@ -179,7 +179,7 @@ class RakeCommander
 
     # Helper to simplify `short` and `name` capture from arguments and keyed arguments.
     # @return [Array<Symbol, String>] the pair `[short, name]`
-    def capture_arguments_short_n_name(args, kargs, sample: false)
+    def capture_arguments_short_n_name!(args, kargs, sample: false)
       name, short = kargs.values_at(:name, :short)
       short ||= capture_arguments_short!(args)
       name  ||= capture_arguments_name!(args, sample_n_short: sample && short)

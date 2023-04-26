@@ -67,7 +67,7 @@ class RakeCommander
           when Proc
             action.call(value)
           when :default
-            commander_deep_dup(value)
+            custom_deep_dup(value)
           end
         end
       end

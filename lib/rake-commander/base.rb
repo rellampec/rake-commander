@@ -2,6 +2,7 @@ require_relative 'base/object_helpers'
 require_relative 'base/class_helpers'
 require_relative 'base/class_inheritable'
 require_relative 'base/class_auto_loader'
+require_relative 'base/custom_error'
 require_relative 'rake_task'
 require_relative 'options'
 

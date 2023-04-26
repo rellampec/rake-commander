@@ -7,6 +7,15 @@ class RakeCommander
           super("unknown arguments: #{to_message(value)}", from: from)
         end
 
+        def leftovers
+          case @value
+          when Array
+            @value
+          else
+            []
+          end
+        end
+
         private
 
         def to_message(value)

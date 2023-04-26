@@ -62,13 +62,14 @@ class RakeCommander
       end
 
       # Allows to use a set of options
+      # @note it does a deep dup of each option.
       # @param override [Boolean] wheter existing options with same option name
       #   should be overriden, may they clash
       # @param options [Enumerable<RakeCommander::Option>]
       def use_options(opts, override: true)
         raise "Could not obtain list of RakeCommander::Option from #{opts.class}" unless opts = to_options(opts)
         opts.each do |opt|
-          add_to_options(opt, override: override)
+          add_to_options(opt.deep_dup, override: override)
         end
         self
       end
@@ -107,7 +108,7 @@ class RakeCommander
       # @return [OptionParser] the built options parser.
       def options_parser(&middleware)
         new_options_parser do |opts|
-          opts.banner = banner          if banner
+          opts.banner = banner if banner
           option_help(opts)
           free_shorts = implicit_shorts
 
@@ -163,17 +164,18 @@ class RakeCommander
         self
       end
 
-      # @todo check that all the elements are of `option_class`
       # @return [Array<RakeCommander::Option>]
-      def to_options(opts)
-        if opts.is_a?(Hash)
-          opts.values
-        elsif opts.is_a?(RakeCommander::Options::Set)
-          opts.class.options
-        elsif opts <= RakeCommander::Options::Set
-          opts.options
-        elsif opts.respond_to?(:to_a)
-          opts.to_a
+      def to_options(value)
+        if value.is_a?(Class) && value <= self
+          value.options
+        elsif value.is_a?(self)
+          value.class.options
+        elsif value.is_a(Array)
+          value.select {|opt| opt.is_a?(option_class)}
+        elsif value.is_a?(Hash)
+          to_options(value.values)
+        elsif value.is_a(Enumerable) || value.respond_to?(:to_a)
+          to_options(value.to_a)
         end
       end
 

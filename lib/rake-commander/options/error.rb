@@ -4,7 +4,7 @@ require_relative 'error/invalid_argument'
 require_relative 'error/invalid_option'
 require_relative 'error/missing_option'
 require_relative 'error/unknown_argument'
-
+require_relative 'error/handling'
 
 class RakeCommander
   module Options
@@ -12,59 +12,37 @@ class RakeCommander
       class << self
         def included(base)
           super(base)
+          base.send :include, RakeCommander::Options::Error::Handling
           base.extend ClassMethods
-          base.attr_inheritable :error_on_leftovers, :leftovers_callback
         end
       end
 
       module ClassMethods
-        # Whether it should trigger an error when there are argument leftovers
-        # after parsing `ARGV`.
-        # @note
-        #   1. It triggers error by default when there are parsing `leftovers`.
-        #   2. Even if a block is defined, if action is `false` it won't trigger error.
-        # @raise [RakeCommander::Options::UnknownArgument]
-        #   1. when `action` is `true` (default)
-        #   2. when the `action_block` is defined and returns `true`.
-        # @yield [leftovers, results] do something with leftovers and parsed options.
-        #   * The block is only called if there are `leftovers`.
-        # @yieldparam leftovers [Array<String>] the leftovers.
-        # @yieldparam results [Hash] the parsed options.
-        # @yieldreturn [Boolean] whether this should trigger an error or not.
-        # @return [Boolean] whether this error is enabled.
-        def error_on_leftovers(action = :not_used, &block)
-          @error_on_leftovers = action if action != :not_used
-          if block_given?
-            @leftovers_callback = block
-            @error_on_leftovers = true
-          end
-          return self unless block_given? || action != :not_used
-          @error_on_leftovers = true unless @error_on_leftovers == false
-          @error_on_leftovers
-        end
-
         # Re-open method to add all the error handling.
         # @see RakeCommander::Options::Result
         def parse_options(argv = ARGV, results: {}, leftovers: [], &block)
-          super.tap do |_|
-            manage_leftovers(leftovers, results)
-            check_required_presence(results)
+          with_error_handling(argv, results, leftovers) do
+            super.tap do |_|
+              check_on_leftovers(leftovers)
+              check_required_presence(results)
+            end
+          rescue OptionParser::InvalidOption => e
+            eklass = RakeCommander::Options::Error::InvalidOption
+            raise eklass.new(e, from: self), nil, cause: nil
+          rescue OptionParser::MissingArgument => e
+            eklass = RakeCommander::Options::Error::MissingArgument
+            opt    = error_option(e, eklass)
+            msg    = e.message
+            msg    = "missing required argument: #{opt.name_hyphen} (#{opt.short_hyphen})" if opt
+            raise eklass.new(from: self, option: opt), msg, cause: nil
+          rescue OptionParser::InvalidArgument => e
+            eklass = RakeCommander::Options::Error::InvalidArgument
+            opt    = error_option(e, eklass)
+            raise eklass.new(e, from: self, option: opt), nil, cause: nil unless opt&.argument_required?
+            eklass = RakeCommander::Options::Error::MissingArgument
+            msg = "missing required argument in option: #{opt.name_hyphen} (#{opt.short_hyphen})"
+            raise eklass.new(from: self, option: opt), msg, cause: nil
           end
-        rescue OptionParser::InvalidOption => e
-          eklass = RakeCommander::Options::Error::InvalidOption
-          raise eklass.new(e, from: self), nil, cause: nil
-        rescue OptionParser::MissingArgument => e
-          eklass = RakeCommander::Options::Error::MissingArgument
-          opt    = error_option(e, eklass)
-          msg    = opt ? "missing required argument: #{opt.name_hyphen} (#{opt.short_hyphen})" : e.message
-          raise eklass.new(from: self), msg, cause: nil
-        rescue OptionParser::InvalidArgument => e
-          eklass = RakeCommander::Options::Error::InvalidArgument
-          opt    = error_option(e, eklass)
-          raise eklass.new(e, from: self), nil, cause: nil unless opt&.argument_required?
-          eklass = RakeCommander::Options::Error::MissingArgument
-          msg = "missing required argument in option: #{opt.name_hyphen} (#{opt.short_hyphen})"
-          raise eklass.new(from: self), msg, cause: nil
         end
 
         protected
@@ -85,13 +63,10 @@ class RakeCommander
         # @param leftovers [Array<String>]
         # @param results [Hash] the parsed options
         # @return [Hash] the results (same object)
-        def manage_leftovers(leftovers, results)
-          results.tap do |_r|
-            next if leftovers.empty? || !error_on_leftovers
-            eklass = RakeCommander::Options::Error::UnknownArgument
-            raise eklass.new(leftovers, from: self) unless block = @leftovers_callback
-            raise eklass.new(leftovers, from: self) if     block.call(leftovers, results)
-          end
+        def check_on_leftovers(leftovers)
+          return if leftovers.empty?
+          eklass = RakeCommander::Options::Error::UnknownArgument
+          raise eklass.new(leftovers, from: self)
         end
 
         # It throws an exception if any of the required options

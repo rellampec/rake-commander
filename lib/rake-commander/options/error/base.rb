@@ -2,11 +2,20 @@ class RakeCommander
   module Options
     module Error
       # Base error class that does a rely between OptionParser and RakeCommander errors
-      class Base < StandardError
+      class Base < RakeCommander::Base::CustomError
         extend RakeCommander::Options::Name
         OPTION_REGEX = /(?:argument|option): (?<option>.+)/i.freeze
 
         class << self
+          # Helper to check if `error` is this class or any children class
+          # @raise ArgumentError if it does not meet this condition.
+          def require_argument!(error, arg_name, accept_children: true)
+            msg  = "Expecting #{arg_name} to be #{self}"
+            msg << "or child thereof." if accept_children
+            msg << ". Given: #{error.is_a?(Class)? error : error.class}"
+            raise ArgumentError, msg unless error <= self
+          end
+
           # To (re)define the RegExp used to identify the option of an error message.
           def option_regex(value = :not_used)
             @option_regex ||= OPTION_REGEX
@@ -23,28 +32,17 @@ class RakeCommander
           end
         end
 
-        attr_reader :from
+        attr_reader :from, :option
 
-        def initialize(value = nil, from: nil)
-          @value   = value
-          @from    = from
-          return unless value?
-          @message = to_message(value)
-          super(@message)
+        def initialize(value = nil, from: nil, option: nil)
+          @from   = from
+          @option = option
+          super(value)
         end
 
-        def value?
-          @value
-        end
-
-        def to_s
-          return @message if value?
-          unclassed(super)
-        end
-
-        def message
-          return @message if value?
-          to_message(unclassed(super))
+        # Options that are related to the error. There may not be any.
+        def options
+          [option].compact.flatten
         end
 
         def name?
@@ -70,24 +68,16 @@ class RakeCommander
           end
         end
 
-        private
-
-        def unclassed(str)
-          str.to_s.gsub(self.class.to_s, '').strip
-        end
+        protected
 
         def to_message(value)
           case value
-          when StandardError
-            "#{from_desc}#{value.message}"
           when Array
             to_message(value.map {|v| "'#{v}'"}.join(', '))
           when String
-            "#{from_desc}#{value}"
-          when NilClass
-            value
+            "#{from_desc}#{super}"
           else
-            raise ArgumentError, "Expecting String or OptionParser error. Given: #{value.class}"
+            super
           end
         end
       end

@@ -7,7 +7,11 @@ class RakeCommander
           super("missing required option: #{to_message(value)}", from: from)
         end
 
-        private
+        def options
+          super | to_options(@value)
+        end
+
+        protected
 
         def to_message(value)
           case value
@@ -17,11 +21,26 @@ class RakeCommander
             to_message(value.values.uniq)
           when Array
             value.map do |v|
-              to_message(v)
+              v.is_a?(RakeCommander::Option)? to_message(v) : v
             end.join(', ')
           else
             super
           end
+        end
+
+        private
+
+        def to_options(value)
+          case value
+          when RakeCommander::Option
+            [value]
+          when Array
+            value.select {|v| v.is_a?(RakeCommander::Option)}
+          when Hash
+            to_options(value.values)
+          else
+            []
+          end.compact
         end
       end
     end
