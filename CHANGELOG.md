@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
   - Without the double dash delimiter `--`, this has problems `rake examples:chainer`
   - Add more supported type_coertions (i.e. `Symbol`)
     - Add support [for `ActiveRecord::Enum`](https://apidock.com/rails/ActiveRecord/Enum)
-  - Rake task parameters (see: https://stackoverflow.com/a/825832/4352306)
+  - Rake task parameters (see: https://stackoverflow.com/a/825832/4352306 & https://stackoverflow.com/a/825832/4352306)
   - Add `enhance` functionality (when a task is invoked it runs before it; declared with `task` as well)
   - Add `no_short` option (which should give the result of that option with the option name key)
   - Add `on_option` handler at instance level, so within a `task` definition, we can decide certain things, such as if the functionality should be active when the `self.class` does not have that option.

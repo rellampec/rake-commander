@@ -153,7 +153,7 @@ Fortunately, the target of `rake-commander` is just to **enhance** existing synt
 
 Relaunching the application to a new instance requires very little:
 
-```
+```ruby
 Rake.application = Rake::Application.new
 Rake.application.run
 exit(0) # abort previous application run
