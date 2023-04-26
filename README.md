@@ -20,6 +20,10 @@ Or install it yourself as:
 
 ## Syntax
 
+See **Usage** section.
+
+### Command Line
+
 Although it is planned to extend the syntax, the current version allows to pass **options only to one task**.
 
 ```
@@ -32,21 +36,47 @@ The method is to divide `ARGV` into two parts based on the first space-surrounde
 <rake part> -- [task1 options part]
 ```
 
+#### Fix pending
+
+Tasks declared using `RakeCommander` are getting `argv` uncut, which includes the task as an argument.
+
+```
+$ rake examples:chainer
+rake aborted!
+RakeCommander::Options::Error::UnknownArgument: (examples:chainer) unknown arguments: 'examples:chainer'
+```
+
+Annoyingly, this requires to call them with double dash at the end `--`
+
+```
+rake examples:chainer --
+Nothing to do :|
+```
+
 ### `raked` executable
 
 `raked` is a modified version of the `rake` executable, where `Rake` is **slightly patched** (by rake commander) before `Rake::Application.run` is invoked. This allows to modify the `ARGV` parsing behaviour of `rake`, giving room for **opinionated enhanced syntax**.
 
 ### `rake` full support
 
-Work is being done to be able to provide a full patch on `rake`, provided that the main invocation command remains as `rake` (rather than `raked`).
+Work has been done with the aim of providing a full patch on `rake`, provided that the main invocation command remains as `rake` (rather than `raked`).
 
-To preserve `rake` as invocation command, though, it is required to re-launch the application when it has already initialized. The reason is that `rake` has already pre-parsed `ARGV` when `rake-commander` is loaded (i.e. from a `Rakefile`).  
+To preserve `rake` as invocation command, though, the patch re-launches the rake application when it has already initialized. The reason is that `rake` has already pre-parsed `ARGV` when `rake-commander` is loaded (i.e. from a `Rakefile`).
+
+  * For compatibility with tasks declared using `RakeCommander`, it has been discarded a conditional rake application launch based on the presence of enriched syntax (i.e. the presence of `--` delimiter as an argument).
+  * For this to be possible, would need to check on tasks identified by rake at the point of the 2nd patch (on `Rake::Application#top_level`) and figure out if any of those tasks was declared via `RakeCommander` and requires the patch to be active (relaunch rake application). Although should not be hard to keep track on all the tasks declared via `RakeCommander`, this would need further thoughts on possible drawbacks.
 
 ### Options Syntax & Parsing
 
-It supports most of options syntax of the native `OptionParser` but for one exception perhaps:
-  1. It does **NOT** support definitions NOR parsing of shortcuts with embedded argument (i.e. `-nNAME`).
+It supports most of options syntax of the native `OptionParser` but for a couple of exceptions perhaps:
+  1. It does **NOT** support definitions or parsing of shortcuts with **embedded argument** (i.e. `-nNAME`).
+  2. It does **NOT** support definitions that include equal sign (i.e. `name=NAME`, `n=NAME`)
 
+An argument should be explicitly declared in the `name` part:
+
+```
+  option :n, '--name NAME'
+```
 
 ## Usage
 

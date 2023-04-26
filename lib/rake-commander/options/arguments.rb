@@ -16,6 +16,13 @@ class RakeCommander
       module ClassMethods
         include RakeCommander::Options::Name
 
+        # @note it assumes `ARGV` has been left unaltered.
+        # @return [Boolean] whether enhanced parsing should be switched on or off.
+        def argv_with_enhanced_syntax?(argv = ARGV)
+          return false unless argv.is_a?(Array)
+          argv.include?(RAKE_COMMAND_EXTENDED_OPTIONS_START)
+        end
+
         # Configuration setting
         # Whether the additional arguments (extended options) managed by this gem
         # should be removed/consumed from `ARGV` before `Rake` processes option arguments.
