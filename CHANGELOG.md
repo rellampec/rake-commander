@@ -7,6 +7,11 @@ All notable changes to this project will be documented in this file.
   - Rake task parameters (see: https://stackoverflow.com/a/825832/4352306)
   - Add `enhance` functionality (when a task is invoked it runs before it; declared with `task` as well)
   - Add `no_short` option (which should give the result of that option with the option name key)
+  - Add `on_option` handler at instance level, so within a `task` definition, we can decide certain things, such as if the functionality should be active when the `self.class` does not have that option.
+    * This is specially useful to be able to extend through inheritance chain, where we extend `task` (rather than redefining it), but we don't want options we removed (with `option_remove`) to throw unexpected results.
+    * Example: `on_option(:t, defined: true) {|value, option| do-stuff}` <- block to be called only if the option is defined in the class (alternative: `defined: :only`)
+    * Example: `on_option(:t, defined: false) {|value, option| do-stuff}` <- block to be called regardless the option exists (alternative: `defined: :ignore`)
+    * Example: `on_option(:t, present: true) {|value, option| do-stuff}` <- block to be called only when the option `:t` is present in the parsed `options` result.
 
 ## DISCARDED IMPROVENTS
   - Option to globally enable/disable the 2nd patch?

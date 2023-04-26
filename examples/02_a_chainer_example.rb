@@ -1,17 +1,19 @@
 class RakeCommander::Custom::Chainer < RakeCommander
   namespace :examples
 
-  desc 'Uses rake (or raked) to invoke examples:chained'
-  task :chainer
-
   # Symbol Array
   SHELL_METHODS = %I[system back_quotes x spawn exec fork_exec pipe].freeze
+  TARGET_TASK   = 'examples:chained'
+
+  desc "Uses rake (or raked) to invoke #{TARGET_TASK}"
+  task :chainer
+
 
   # When an option as a default value defined, it is added to `options` result
   # even when the option was not invoked
   options_with_defaults true
 
-  option :c, :chain, TrueClass, desc: "Calls: '< rake|raked > examples:chained task'"
+  option :c, :chain, TrueClass, desc: "Calls: '< rake|raked > #{TARGET_TASK} task'"
   option :w, '--with CALLER', default: 'rake', desc: "Specifies if should invoke with 'rake' or 'raked'"
   str_desc  = "The method used to shell the call to examples:chained."
   str_desc << " Options: #{SHELL_METHODS.join(', ')}"
@@ -22,7 +24,7 @@ class RakeCommander::Custom::Chainer < RakeCommander
   def task(*_args)
     if options[:c]
       with = options[:w] == 'rake' ? 'rake' : 'bin\raked'
-      cmd  = "#{with} examples:chained"
+      cmd  = "#{with} #{self.class::TARGET_TASK}"
       cmd << " -- --say \"#{options[:s]}\"" if options[:s]
       cmd << " --debug" if options[:b]
 

@@ -69,6 +69,8 @@ class RakeCommander
       end
 
       # Does the final rake `task` definition
+      # @note although it will exist, the task won't be listed with `rake -T`
+      #   unless it has a description (`desc`).
       # @note this method is extended by some modules
       #   1. `RakeCommander::Options::Result`: Ensure options are parsed before calling task
       #   2. `RakeCommander::Options::Arguments`: `exit(0)` when `Rake` interprets the full `ARGV`
@@ -76,6 +78,7 @@ class RakeCommander
       # @return [@see Rake::Task] same results as if you used `task :name {}` or `namespace :space {}`
       def install_task(&task_method)
         raise "Expected task_block." unless task_method
+
         if namespaced?
           namespaced do
             rake.desc desc
