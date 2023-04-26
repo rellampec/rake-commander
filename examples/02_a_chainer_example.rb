@@ -32,14 +32,18 @@ class RakeCommander::Custom::Chainer < RakeCommander
   end
 
   def subcommand_base
-    with = options[:w] == 'rake' ? 'rake' : 'bin\raked'
+    with = options[:w] == 'raked' ? 'bin\raked' : 'rake'
     "#{with} #{self.class::TARGET_TASK}"
   end
 
   def subcommand_arguments
     [].tap do |args|
-      args << "--say \"#{options[:s]}\"" if options[:s]
-      args << "--debug"                  if options[:b]
+      if options.key?(:s)
+        str_opt  = "--say"
+        str_opt << " \"#{options[:s]}\"" if options[:s]
+        args << str_opt
+      end
+      args << "--debug" if options[:b]
     end
   end
 

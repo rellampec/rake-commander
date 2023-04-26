@@ -31,12 +31,13 @@ class RakeCommander
           #   **`RakeCommander` has been required**.
           #   * So by itself alone it allows to use `raked` executable that this gem provides.
           def run(argv = ARGV)
-            rake_comm_debug "R U N  !", "\n", num: 1, pid: true
-            rake_comm_debug "  ---> ARGV: [#{argv.map {|a| "'#{a}'"}.join(', ')}]"
-            rake_comm_debug "  ---> Command: #{$PROGRAM_NAME}"
             @rake_commander_run_argv_patch = true unless instance_variable_defined?(:@rake_commander_run_argv_patch)
             RakeCommander.self_load
-            super(RakeCommander.argv_rake_native_arguments(argv))
+            rake_comm_debug "R U N  !", "\n", num: 1, pid: true
+            rake_comm_debug "  ---> Command: #{$PROGRAM_NAME}"
+            rake_comm_debug "  ---> ARGV: [#{argv.map {|a| "'#{a}'"}.join(', ')}]"
+            argv = RakeCommander.argv_rake_native_arguments(argv)
+            super(argv)
           end
         end
       end

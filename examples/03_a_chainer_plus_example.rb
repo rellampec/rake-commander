@@ -21,6 +21,7 @@ class RakeCommander::Custom::ChainerPlus < RakeCommander::Custom::Chainer
 
   def task(*_args)
     puts "Hello #{options[:o]}!!" if options[:o]
+    options[:m] = :system unless options[:m]
     super
   end
 

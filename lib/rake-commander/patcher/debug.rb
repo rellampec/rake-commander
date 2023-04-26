@@ -2,8 +2,6 @@ class RakeCommander
   module Patcher
     # Helpers to patch
     module Debug
-      private
-
       # Helper for debugging
       def rake_comm_debug(msg, prefix = '', num: nil, pid: false)
         return unless RakeCommander::Patcher.debug?
