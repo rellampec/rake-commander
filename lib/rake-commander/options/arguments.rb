@@ -53,6 +53,8 @@ class RakeCommander
         def argv_extended_options(argv = ARGV.dup)
           if idx = argv.index(RAKE_COMMAND_EXTENDED_OPTIONS_START)
             argv = argv[idx+1..-1]
+          else
+            argv = []
           end
           argv
         end

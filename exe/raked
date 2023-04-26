@@ -24,5 +24,4 @@
 
 require "rake"
 require "rake-commander"
-
 Rake.application.run

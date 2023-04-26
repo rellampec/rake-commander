@@ -4,12 +4,10 @@ require "yard"
 require "redcarpet"
 
 # Install examples
-#puts "R a k e f i l e   L o a d i n g . . ."
 require_relative 'lib/rake-commander'
 #RakeCommander::Patcher.debug = true
 Dir["examples/*_example.rb"].sort.each {|file| require_relative file }
 RakeCommander.self_load
-#puts "R a k e f i l e   L o a d e d  ! !"
 
 desc "run the specs"
 RSpec::Core::RakeTask.new(:spec)

@@ -2,7 +2,6 @@
 All notable changes to this project will be documented in this file.
 
 ## TO DO
-  - Without the double dash delimiter `--`, this has problems `rake examples:chainer`
   - Add more supported type_coertions (i.e. `Symbol`)
     - Add support [for `ActiveRecord::Enum`](https://apidock.com/rails/ActiveRecord/Enum)
   - Rake task parameters (see: https://stackoverflow.com/a/825832/4352306 & https://stackoverflow.com/a/825832/4352306)

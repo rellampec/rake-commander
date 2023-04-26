@@ -2,5 +2,4 @@
 
 require "rake"
 require_relative File.join(__dir__, '../lib/rake-commander')
-
 Rake.application.run

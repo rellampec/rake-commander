@@ -2,6 +2,20 @@
 
 Another way to define re-usable rake tasks and samples.
 
+## Introduction
+
+Rake commander is a way to declare **rake tasks** with re-usable classes. It enhances the command line syntax, as tasks can come with their own **options**, inherit them, re-use declared options sets, modify/re-open or even remove them.
+
+Although the `OptionParser` ruby native class is used for parsing the options, the declaration of options, additionally to the ones of `OptionParser` comes with some **opinionated improvements** and amendments:
+
+1. It is possible to declare options as `required`
+  * This is additional to required option arguments.
+  * Options are inheritable (they get a custom `deep_dup`)
+2. An option can have a `default` value.
+  * Which can optionally be automatically used when the option accepts or requires an argument.
+3. Options parsing raises specific option errors. For a given task/class, each error type can have its own handler or preferred action.
+  * Defined error handling is inheritable and can be redefined.
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -18,55 +32,44 @@ Or install it yourself as:
 
     $ gem install rake-commander
 
-## Syntax
+## Usage
 
-See **Usage** section.
-
-### Command Line
-
-Although it is planned to extend the syntax, the current version allows to pass **options only to one task**.
+See [**the `examples`**](https://github.com/rellampec/rake-commander/tree/main/examples).
 
 ```
-rake [rake-options] task1 task2 -- [task1-options]
+rake -T examples
 ```
 
-The method is to divide `ARGV` into two parts based on the first space-surrounded double dash ` -- `.
+Go through the [basic example](https://github.com/rellampec/rake-commander/blob/main/examples/01_basic_example.rb).
 
 ```
-<rake part> -- [task1 options part]
+rake examples:basic -- -h
+rake examples:basic -- -z -e prod
 ```
+  * The double dash `--` is used to tell to rake-commander where the options section starts.
 
-#### Fix pending
-
-Tasks declared using `RakeCommander` are getting `argv` uncut, which includes the task as an argument.
-
-```
-$ rake examples:chainer
-rake aborted!
-RakeCommander::Options::Error::UnknownArgument: (examples:chainer) unknown arguments: 'examples:chainer'
-```
-
-Annoyingly, this requires to call them with double dash at the end `--`
+At the same time the double dash delimiter seems to make rake ignore anything that comes afterwards. Without loading rake commander, you could try:
 
 ```
-rake examples:chainer --
-Nothing to do :|
+$ rake --trace rspec
+** Invoke spec (first_time)
+** Execute spec
+rspec logging and results
 ```
 
-### `raked` executable
+And then re-try with
 
-`raked` is a modified version of the `rake` executable, where `Rake` is **slightly patched** (by rake commander) before `Rake::Application.run` is invoked. This allows to modify the `ARGV` parsing behaviour of `rake`, giving room for **opinionated enhanced syntax**.
+```
+$ rake rspec -- --trace
+rspec logging and results
+```
 
-### `rake` full support
+  * The `--trace` option is being natively ignored by `rake` due to the preceding double dash (` -- `).
 
-Work has been done with the aim of providing a full patch on `rake`, provided that the main invocation command remains as `rake` (rather than `raked`).
 
-To preserve `rake` as invocation command, though, the patch re-launches the rake application when it has already initialized. The reason is that `rake` has already pre-parsed `ARGV` when `rake-commander` is loaded (i.e. from a `Rakefile`).
+### Syntax
 
-  * For compatibility with tasks declared using `RakeCommander`, it has been discarded a conditional rake application launch based on the presence of enriched syntax (i.e. the presence of `--` delimiter as an argument).
-  * For this to be possible, would need to check on tasks identified by rake at the point of the 2nd patch (on `Rake::Application#top_level`) and figure out if any of those tasks was declared via `RakeCommander` and requires the patch to be active (relaunch rake application). Although should not be hard to keep track on all the tasks declared via `RakeCommander`, this would need further thoughts on possible drawbacks.
-
-### Options Syntax & Parsing
+### Declaring and using Task Options
 
 It supports most of options syntax of the native `OptionParser` but for a couple of exceptions perhaps:
   1. It does **NOT** support definitions or parsing of shortcuts with **embedded argument** (i.e. `-nNAME`).
@@ -78,25 +81,29 @@ An argument should be explicitly declared in the `name` part:
   option :n, '--name NAME'
 ```
 
-## Usage
+### Command Line
 
-See the `examples`. You can run them with `raked` (`bin/raked` in _development_), which is just like `rake` executable with the difference that it loads `RakeCommander` right after `Rake` is loaded and before `Rake::Application.run` is invoked.
+Although it is planned to extend the syntax, the current version shares the options through all tasks (declared as `RakeCommander` classes) that are invoked in the same command line.
 
 ```
-raked examples:basic -- -h
-raked examples:basic -- -z -e prod
-```
-  * The double dash `--` is used to tell to rake-commander where the options section starts.
-
-The `Rakefile` has three lines that can serve as a guide. One were we require `rake-commander`, another where we define our `RakeCommander` classes, and one where we load them as actual `Rake` tasks.
-
-```ruby
-require_relative 'lib/rake-commander'
-Dir["examples/*_example.rb"].each {|file| require_relative file }
-RakeCommander.self_load
+rake [rake-options] task1 task2 -- [shared-task-options]
 ```
 
-### Problems of using `rake` executable
+The double dash ` -- ` delimiter allows to modify the `ARGV` parsing behaviour of `rake`, giving room for **opinionated enhanced syntax**. Anything that comes before the double dash is feed to standard `rake`, and anything after `--` are parsed as option tasks via `rake commander`.
+
+```
+<rake part> -- [tasks options part]
+```
+
+### `rake` full support
+
+Work has been done with the aim of providing a full patch on `rake`, provided that the main invocation command remains as `rake`.
+
+To preserve `rake` as invocation command, though, the patch needs to relaunch the rake application when it has already started. The reason is that `rake` has already pre-parsed `ARGV` when `rake-commander` is loaded (i.e. from a `Rakefile`) and has identified as tasks things that are part of the task options.
+
+  * For compatibility with tasks declared using `RakeCommander`, the rake application is always relaunched. Anything that does not belong to task options should not be feed to rake tasks declared with rake commander classes.
+
+#### Challenges encountered with the `rake` executable
 
 Let's say you require/load `rake-commander` in a `Rakefile`, and invoke the [`rake` executable](https://github.com/ruby/rake/blob/master/exe/rake). By the time rake commander is loaded, `Rake` has already captured the `ARGV`, parsed its own options, and pre-parsed possible task(s) invokations.
 
@@ -112,7 +119,7 @@ This is also true when you invoke `rake` via _shell_ from within another task.
 Without the current patch, this is what was happening.
 
 ```
-$ bin\raked examples:chainer -- --chain --say "Just saying..." --with raked
+$ raked examples:chainer -- --chain --say "Just saying..." --with raked
 Calling --> 'rake examples:chained -- --say "Just saying..."'
 Chained task has been called!!
 Just saying...
@@ -120,30 +127,44 @@ rake aborted!
 Don't know how to build task 'Just saying...' (See the list of available tasks with `rake --tasks`)
 ```
 
-#### Alternative with `raked` executable
+#### The alternative of a `raked` executable
 
 **`raked` executable is not necessary. The current patch allows to start directly from `rake`**.
 
-For this reason the `raked` executable was thought to be provided by this gem. The same example above, whe ran with `raked`, would show just perfectly work (as the patch was active when rake application would parse `ARGV`):
+  * This has been kept to the only purpose documentation.
+
+The `raked` executable would be a modified version of the `rake` executable, where `rake_commander` is loaded right after requiring `rake` and before `Rake.application.run` is invoked.
+
+```ruby
+#!/usr/bin/env ruby
+
+require "rake"
+require "rake-commander"
+Rake.application.run
+```
+
+This would allow the patch to be active right at the beginning, preventing this way the patch to kick in after the `rake` application has been firstly launched (it saves to rake one loop of parsing arguments and loading rake files).
 
 ```
-$ bin\raked examples:chainer -- --chain --say "Just saying..." --with raked
+$ raked examples:chainer -- --chain --say "Just saying..." --with raked
 Calling --> 'bin\raked examples:chained -- --say "Just saying..."'
 Chained task has been called!!
 Just saying...
 ```
 
+Using `raked` as separate namespace vs `rake` is completely optional. Most will prefer to keep on just with the main `rake` executable and  `rake-commander` as enhancement to it. This is the rational behind the second patch (explained in detail in the next section).
+
 ### Patching `Rake`
 
-Rake commander does come with a neat patch to the [`Rake::Application#run` method](https://github.com/ruby/rake/blob/48e798484babf725b0562cc417986da513e5d0ae/lib/rake/application.rb#L79) to clean up the `ARGV` before the rake application starts. But it kicks in too late...
+The two patches:
 
-For this reason a more arguable patch has been applied to [`Rake::Application#top_level` method](https://github.com/ruby/rake/blob/48e798484babf725b0562cc417986da513e5d0ae/lib/rake/application.rb#L131)
+  1. Rake commander does come with a neat patch to the [`Rake::Application#run` method](https://github.com/ruby/rake/blob/48e798484babf725b0562cc417986da513e5d0ae/lib/rake/application.rb#L79) to clean up the `ARGV` before the rake application starts. But it kicks in too late...
+  2. For this reason a more arguable patch has been applied to [`Rake::Application#top_level` method](https://github.com/ruby/rake/blob/48e798484babf725b0562cc417986da513e5d0ae/lib/rake/application.rb#L131), where the rake application is relaunched.
 
 #### Patch Rational
 
 Let's say that when we invoke `rake` from the command line, `rake-commander` is loaded from a `Rakefile` (i.e. `require 'rake-commander'`). Looking at the `Rake::Application#run` method code, this places the patch moment, at the best, during the load of the `Rakefile`; during execution of the `load_rakefile` private method ([here is the call](https://github.com/ruby/rake/blob/48e798484babf725b0562cc417986da513e5d0ae/lib/rake/application.rb#L82)).
 
-Some parsed options are being used at this stage (see [`raw_load_rakefile`](https://github.com/ruby/rake/blob/48e798484babf725b0562cc417986da513e5d0ae/lib/rake/application.rb#L719)). As commented before, it can happen that `rake` parsed some of the options that target a `task` rather than just the options that target the `rake` application (which is clearly undesired).
 
 #### Reload `Rake` application
 
