@@ -82,7 +82,7 @@ class RakeCommander
         args.dup.find.with_index do |arg, i|
           yield(arg).tap do |valid|
             next unless valid
-            args.delete(i)
+            args.slice!(i)
             return arg
           end
         end

@@ -3,7 +3,7 @@ class RakeCommander::Custom::ChainedPlus < RakeCommander::Custom::Chained
   task :chained_plus
 
   option_remove :say
-  option :e, '--exit-on-error', TrueClass
+  option :e, '--exit-on-error', TrueClass, desc: 'If it should just exit on "missing argument" error or raise an exception'
   # Move option to the end, make **required** the argument (SOMETHING) as well as the option itself.
   option :s, '--say SOMETHING', "It says 'something'", required: true
 

@@ -23,15 +23,23 @@ class RakeCommander::Custom::Chainer < RakeCommander
 
   def task(*_args)
     if options[:c]
-      with = options[:w] == 'rake' ? 'rake' : 'bin\raked'
-      cmd  = "#{with} #{self.class::TARGET_TASK}"
-      cmd << " -- --say \"#{options[:s]}\"" if options[:s]
-      cmd << " --debug" if options[:b]
-
+      cmd = "#{subcommand_base} -- #{subcommand_arguments.join(' ')}"
       puts "Calling --> '#{cmd}'"
       shell(cmd, method: options[:m])
     else
       puts "Nothing to do :|"
+    end
+  end
+
+  def subcommand_base
+    with = options[:w] == 'rake' ? 'rake' : 'bin\raked'
+    "#{with} #{self.class::TARGET_TASK}"
+  end
+
+  def subcommand_arguments
+    [].tap do |args|
+      args << "--say \"#{options[:s]}\"" if options[:s]
+      args << "--debug"                  if options[:b]
     end
   end
 
