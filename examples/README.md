@@ -1,6 +1,6 @@
 ## Examples
 
-The `Rakefile` has three lines that can serve as a guide. One were we require `rake-commander`, another where we define our `RakeCommander` classes, and one where we load them as actual `Rake` tasks.
+The Rakefile `Examples.rake` has three lines that can serve as a guide. One were we require `rake-commander`, another where we define our `RakeCommander` classes, and one where we load them as actual `Rake` tasks.
 
 ```ruby
 require_relative 'lib/rake-commander'

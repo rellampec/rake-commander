@@ -1,15 +1,10 @@
-require 'dotenv'
-require 'dotenv/load'
 require 'bundler/gem_tasks'
 require 'rspec/core/rake_task'
 require 'yard'
 require 'redcarpet'
 
-# Install examples
-require_relative 'lib/rake-commander'
-RakeCommander::Patcher.debug = ENV['COMMANDER_DEBUG'] == "true"
-Dir["examples/*_example.rb"].sort.each {|file| require_relative file }
-RakeCommander.self_load
+# Install examples and load `rake-commander`
+Rake.add_rakelib 'examples'
 
 desc 'run the specs'
 RSpec::Core::RakeTask.new(:spec)
