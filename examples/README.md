@@ -45,7 +45,7 @@ rake examples:chainer_plus -- -h
 rake examples:chained_plus -- -h
 ```
 
-### Error handling mixed with options
+#### Error handling mixed with options
 
 The option `--exit-on-error` allows the error handler defined in `chained_plus` to decide if it should raise the error or just do an `exit 1`
 
