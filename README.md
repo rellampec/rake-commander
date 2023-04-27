@@ -129,9 +129,9 @@ Don't know how to build task 'Just saying...' (See the list of available tasks w
 
 #### The alternative of a `raked` executable
 
-**`raked` executable is not necessary. The current patch allows to start directly from `rake`**.
+**`raked` executable is not necessary and is not provided for prod environments. The current patch allows to start directly from `rake`**.
 
-  * This has been kept to the only purpose documentation.
+  * This has been kept to the only purpose of documentation.
 
 The `raked` executable would be a modified version of the `rake` executable, where `rake_commander` is loaded right after requiring `rake` and before `Rake.application.run` is invoked.
 
