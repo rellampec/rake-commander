@@ -1,6 +1,9 @@
 # env files
 .env*
 
+# core development-only executables
+/bin/raked*
+
 # it's a gem, ignore the lockfile
 Gemfile.lock
 
