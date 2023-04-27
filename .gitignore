@@ -1,3 +1,6 @@
+# env files
+.env*
+
 # it's a gem, ignore the lockfile
 Gemfile.lock
 

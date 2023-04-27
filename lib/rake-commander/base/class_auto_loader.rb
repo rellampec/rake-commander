@@ -25,17 +25,25 @@ class RakeCommander
       end
 
       # To restrict which namespaces it is allowed to load from
+      # @note this deletes from the `:ignore` namespaces
       def autoload_namespace(*namespaces)
         _autoload_namespace(:include, *namespaces)
       end
 
       # To ignore certain namespaces this class should not autoload from
+      # @note this deletes from the `:include` namespaces
       def autoload_namespace_ignore(*namespaces)
         _autoload_namespace(:ignore, *namespaces)
       end
 
+      # Applies a change to the `autoloaded_namespaces`
       def _autoload_namespace(type, *namespaces)
-        autoloaded_namespaces(type).concat(namespaces) unless namespaces.empty?
+        autoloaded_namespaces(type).tap do |target|
+          next if namespaces.empty?
+          other_type = type == :include ? :ignore : :include
+          namespaces.each {|nm_sp| autoloaded_namespace(other_type).delete(nm_sp)}
+          target.concat(namespaces)
+        end
       end
 
       # @param constant [Class, String] a class or namespace we want to check auto-load entitlement thereof.
@@ -61,14 +69,20 @@ class RakeCommander
         @autoloaded_children ||= []
       end
 
+      # Keep track on actual children that have been ignored by `autoload_namespace_ignore`.
+      def ignored_children
+        @ignored_children ||= []
+      end
+
       # Allows to reload
       # @note it may be handy some times.
       def clear_autoloaded_children
-        forget_class!(*autoloaded_children)
+        forget_class!(*autoloaded_children, *ignored_children)
+        @ignored_children    = []
         @autoloaded_children = []
       end
 
-      # Prevents already excluded childrent to enter into the loop again.
+      # Prevents already excluded children to enter into the loop again.
       def excluded_children
         @excluded_children ||= []
       end
@@ -81,7 +95,9 @@ class RakeCommander
         descendants(parent_class: autoloaded_class, scope: new_detected).select do |child_class|
           !autoloaded_children.include?(child_class) && \
             !excluded_children.include?(child_class) && \
-            autoload_class?(child_class)
+            autoload_class?(child_class).tap do |ignored|
+              ignored_children.push(child_class) if ignored
+            end
         end
       end
 

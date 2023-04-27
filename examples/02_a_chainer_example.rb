@@ -1,16 +1,13 @@
 require_relative 'libs/shell_helpers'
 
 class RakeCommander::Custom::Chainer < RakeCommander
+  include Examples::Libs::ShellHelpers
+  TARGET_TASK = 'examples:chained'.freeze
+
   namespace :examples
 
-  include Examples::Libs::ShellHelpers
-
-  # Symbol Array
-  TARGET_TASK   = 'examples:chained'.freeze
-
-  desc "Uses rake (or raked) to invoke #{TARGET_TASK}"
   task :chainer
-
+  desc "Uses rake (or raked) to invoke #{TARGET_TASK}"
 
   # When an option as a default value defined, it is added to `options` result
   # even when the option was not invoked
@@ -18,10 +15,11 @@ class RakeCommander::Custom::Chainer < RakeCommander
 
   option :c, :chain, TrueClass, desc: "Calls: '< rake|raked > #{TARGET_TASK} task'"
   option :w, '--with CALLER', default: 'rake', desc: "Specifies if should invoke with 'rake' or 'raked'"
+
   str_desc  = "The method used to shell the call to examples:chained."
   str_desc << " Options: #{SHELL_METHODS.join(', ')}"
-  option '-m', '--method [METHOD]', default: 'system', desc: str_desc
-  option '-s', '--say [SOMETHING]', "It makes chainer say 'something'"
+  option '-m', 'method [METHOD]', default: 'system', desc: str_desc
+  option '-s', "It makes chainer say 'something'", name: '--say [SOMETHING]'
   option '-b', '--debug', TrueClass, 'Whether to add additional context information to messages'
 
   def task(*_args)

@@ -58,6 +58,7 @@ module Examples
         end
       end
 
+      # Changes the commandline prompt, so we can discard those.
       def pipe_prompt(pipe, prompt: ':>$ ')
         if Gem::Platform.local.os == "mingw32"
           pipe.puts "function prompt {\"#{prompt}\"}"
@@ -67,6 +68,7 @@ module Examples
         prompt
       end
 
+      # Command to open a new shell for `pipe`
       def host_shell_command
         if Gem::Platform.local.os == "mingw32"
           "powershell -noprofile -noninteractive"

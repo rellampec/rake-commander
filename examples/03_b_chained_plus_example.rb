@@ -1,3 +1,4 @@
+require 'pp'
 class RakeCommander::Custom::ChainedPlus < RakeCommander::Custom::Chained
   desc 'A task+ you want to chain to'
   task :chained_plus
@@ -8,10 +9,9 @@ class RakeCommander::Custom::ChainedPlus < RakeCommander::Custom::Chained
   option :s, '--say SOMETHING', "It says 'something'", required: true
 
   error_on_options error: RakeCommander::Options::Error::MissingArgument do |err, _argv, results, _leftovers|
-    msg  = "Results when 'missing argument' error was raised"
-    msg << " on option '#{err.option.name_full}'" if err.option
-    puts msg
-    pp results
+    msg  = "Parsed results when 'missing argument' error was raised"
+    msg << "\non option '#{err.option.name_full}'" if err.option
+    puts "#{msg} => #{results.pretty_inspect}"
     !results[:e]
   end
 end

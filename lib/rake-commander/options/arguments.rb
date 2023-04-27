@@ -52,11 +52,10 @@ class RakeCommander
         # @return [Array<String>] the target arguments to be parsed by `RakeCommander::Options`
         def argv_extended_options(argv = ARGV.dup)
           if idx = argv.index(RAKE_COMMAND_EXTENDED_OPTIONS_START)
-            argv = argv[idx+1..-1]
+            argv[idx+1..-1]
           else
-            argv = []
+            []
           end
-          argv
         end
 
         # It slices from the original `ARGV` the extended_options of this gem.
