@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
     - Add support [for `ActiveRecord::Enum`](https://apidock.com/rails/ActiveRecord/Enum)
   - Option definitions
     - Order: `where: [:tail, :top]` and `[after, before]: :option_name`
+    - Configuration: allow to define option override behaviour and whether it should trigger an exception
   - Error handlers
     - See if it would be possible to parse all the valid options so we get all the valid results before some error is raised. Although this can be achieved with `OptionParser#order!`, it destroys switches; which would require to give it two parsing shots whenever there is an error.
       - It should be ensured that the parsed options results object is remains the same.
