@@ -1,6 +1,6 @@
 # RakeCommander
 
-Another way to define re-usable rake tasks and samples.
+Classing rake tasks with options. Create re-usable tasks, options and samples.
 
 ## Introduction
 
