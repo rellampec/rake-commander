@@ -1,6 +1,6 @@
 # RakeCommander
 
-Classing rake tasks with options. Create re-usable tasks, options and samples.
+Classing rake tasks with options. Creating re-usable tasks, options and samples thereof.
 
 ## Introduction
 

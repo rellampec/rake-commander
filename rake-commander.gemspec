@@ -8,7 +8,7 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Oscar Segura Samper"]
   spec.email         = ["oscar@ecoportal.co.nz"]
 
-  spec.summary       = 'Classing rake tasks with options. Create re-usable tasks, options and samples.'
+  spec.summary       = 'Classing rake tasks with options. Creating re-usable tasks, options and samples thereof.'
   spec.homepage      = "https://github.com/rellampec/rake-commander"
   spec.licenses      = %w[MIT]
 
