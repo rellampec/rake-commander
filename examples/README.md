@@ -1,11 +1,13 @@
 ## Examples
 
+  * `RakeCommander` is loaded from the repo branch you are checked out.
+
 The Rakefile `Examples.rake` has three lines that can serve as a guide. One were we require `rake-commander`, another where we define our `RakeCommander` classes, and one where we load them as actual `Rake` tasks.
 
 ```ruby
-require_relative 'lib/rake-commander'
+require_relative '../lib/rake-commander'
 RakeCommander::Patcher.debug = ENV['COMMANDER_DEBUG'] == "true"
-Dir["examples/*_example.rb"].sort.each {|file| require_relative file }
+Dir["#{__dir__}/*_example.rb"].sort.each {|file| require_relative file }
 RakeCommander.self_load
 ```
 

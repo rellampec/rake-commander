@@ -1,4 +1,5 @@
 require_relative 'libs/shell_helpers'
+require_relative '02_a_chainer_options_set'
 
 class RakeCommander::Custom::Chainer < RakeCommander
   include Examples::Libs::ShellHelpers
@@ -13,14 +14,14 @@ class RakeCommander::Custom::Chainer < RakeCommander
   # even when the option was not invoked
   options_with_defaults true
 
-  option :c, :chain, TrueClass, desc: "Calls: '< rake|raked > #{TARGET_TASK} task'"
-  option :w, '--with CALLER', default: 'rake', desc: "Specifies if should invoke with 'rake' or 'raked'"
-
+  # Loads the otions from a pre-defined options set
+  options_use RakeCommander::Custom::ChainerOptionsSet
+  # Redefines the description of the option `:chain`
+  option_reopen :chain, desc: "Calls: '< rake|raked > #{TARGET_TASK} task'"
+  # Adds some option of its own
   str_desc  = "The method used to shell the call to examples:chained."
   str_desc << " Options: #{SHELL_METHODS.join(', ')}"
   option '-m', 'method [METHOD]', default: 'system', desc: str_desc
-  option '-s', "It makes chainer say 'something'", name: '--say [SOMETHING]'
-  option '-b', '--debug', TrueClass, 'Whether to add additional context information to messages'
 
   def task(*_args)
     if options[:c]

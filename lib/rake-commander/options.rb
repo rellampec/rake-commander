@@ -66,7 +66,7 @@ class RakeCommander
       # @param override [Boolean] wheter existing options with same option name
       #   should be overriden, may they clash
       # @param options [Enumerable<RakeCommander::Option>]
-      def use_options(opts, override: true)
+      def options_use(opts, override: true)
         raise "Could not obtain list of RakeCommander::Option from #{opts.class}" unless opts = to_options(opts)
         opts.each do |opt|
           add_to_options(opt.deep_dup, override: override)
@@ -173,11 +173,11 @@ class RakeCommander
           value.options
         elsif value.is_a?(self)
           value.class.options
-        elsif value.is_a(Array)
+        elsif value.is_a?(Array)
           value.select {|opt| opt.is_a?(option_class)}
         elsif value.is_a?(Hash)
           to_options(value.values)
-        elsif value.is_a(Enumerable) || value.respond_to?(:to_a)
+        elsif value.is_a?(Enumerable) || value.respond_to?(:to_a)
           to_options(value.to_a)
         end
       end

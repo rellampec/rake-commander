@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 ## TO DO
   - Option results
-    - Include the symbol name keys (configurable)
+    - Include the symbol name keys (configurable). Note that dash will be replaced by underscore.
   - Type Coertions
     - Add a way to define/redefine a set and use them.
     - Add more supported type_coertions as native to the gem (i.e. `Symbol`)
@@ -34,11 +34,11 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 
-## [0.2.0] - 2023-04-26
+## [0.2.0] - 2023-04-28
 
 ### Added
   - Better support for `RakeCommander::Options::Set`
-    - `RakeCommander::Options::use_options` accepts it as a parameter.
+    - `RakeCommander::Options::options_use` accepts it as a parameter.
     - Added `override` parameter to specify if this should override clashed option names.
   - `RakeCommander::Options::class_resolver` to define the `RakeCommander::Option` class.
     - Serves the purpose to ease class extension through inheritance.
