@@ -30,7 +30,7 @@ All notable changes to this project will be documented in this file.
   - Option to globally enable/disable the 2nd patch?
     * That would make this gem completely useless.
 
-## [0.2.2] - 2023-04-xx
+## [0.2.3] - 2023-04-xx
 
 ### Added
 ### Fixed
