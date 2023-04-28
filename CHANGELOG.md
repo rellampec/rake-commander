@@ -4,9 +4,9 @@ All notable changes to this project will be documented in this file.
 ## TO DO
   - Option results
     - Include the symbol name keys (configurable). Note that dash will be replaced by underscore.
-  - Type Coertions
+  - Type Coercions
     - Add a way to define/redefine a set and use them.
-    - Add more supported type_coertions as native to the gem (i.e. `Symbol`)
+    - Add more supported type_coercions as native to the gem (i.e. `Symbol`)
     - Add support [for `ActiveRecord::Enum`](https://apidock.com/rails/ActiveRecord/Enum)
   - Option definitions
     - Order: `where: [:tail, :top]` and `[after, before]: :option_name`
@@ -30,11 +30,17 @@ All notable changes to this project will be documented in this file.
   - Option to globally enable/disable the 2nd patch?
     * That would make this gem completely useless.
 
-## [0.2.1] - 2023-04-xx
+## [0.2.2] - 2023-04-xx
 
 ### Added
 ### Fixed
 ### Changed
+
+## [0.2.1] - 2023-04-29
+
+### Fixed
+  - `RakeCommander::Option` type coercion was not being inherited
+  - Typo on `coertion`: writes `coercion`
 
 
 ## [0.2.0] - 2023-04-28

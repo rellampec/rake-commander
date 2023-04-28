@@ -16,7 +16,7 @@ class RakeCommander
       @default        = kargs[:default]  if kargs.key?(:default)
       @desc           = kargs[:desc]     if kargs.key?(:desc)
       @required       = kargs[:required] if kargs.key?(:required)
-      @type_coertion  = kargs[:type]     if kargs.key?(:type)
+      @type_coercion  = kargs[:type]     if kargs.key?(:type)
       @other_args     = args
       @original_block = block
       configure_other
@@ -91,8 +91,8 @@ class RakeCommander
     end
 
     # @return [Class, NilClass]
-    def type_coertion
-      @type_coertion || (default? && default.class)
+    def type_coercion
+      @type_coercion || (default? && default.class)
     end
 
     # @return [Boolean]
@@ -130,6 +130,7 @@ class RakeCommander
         kargs.merge!(name:     name_full.dup.freeze)  if name_full
         kargs.merge!(desc:     desc.dup)              if desc
         kargs.merge!(default:  default.dup)           if default?
+        kargs.merge!(type:     @type_coercion)        if @type_coercion.is_a?(Class)
         kargs.merge!(required: required?)
       end
     end
@@ -139,7 +140,7 @@ class RakeCommander
       configure_other
       args = [short_hyphen, name_hyphen]
       args.push(*switch_desc(implicit_short: implicit_short))
-      args << type_coertion if type_coertion
+      args << type_coercion if type_coercion
       args
     end
 
@@ -228,7 +229,7 @@ class RakeCommander
     # It consumes `other_args`, to prevent direct overrides to be overriden by it.
     def configure_other
       if type = other_args.find {|arg| arg.is_a?(Class)}
-        @type_coertion = type
+        @type_coercion = type
         other_args.delete(type)
       end
       if value = other_args.find {|arg| arg.is_a?(String)}
