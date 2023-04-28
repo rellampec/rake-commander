@@ -74,6 +74,7 @@ rspec logging and results
 It supports most of options syntax of the native `OptionParser` but for a couple of exceptions perhaps:
   1. It does **NOT** support definitions or parsing of shortcuts with **embedded argument** (i.e. `-nNAME`).
   2. It does **NOT** support definitions that include equal sign (i.e. `name=NAME`, `n=NAME`)
+  3. Currently, declaring a short and a name for the option is compulsory.
 
 An argument of an option should be explicitly declared in the `name` part:
 
