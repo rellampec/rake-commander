@@ -75,7 +75,7 @@ It supports most of options syntax of the native `OptionParser` but for a couple
   1. It does **NOT** support definitions or parsing of shortcuts with **embedded argument** (i.e. `-nNAME`).
   2. It does **NOT** support definitions that include equal sign (i.e. `name=NAME`, `n=NAME`)
 
-An argument should be explicitly declared in the `name` part:
+An argument of an option should be explicitly declared in the `name` part:
 
 ```ruby
   option :n, '--name NAME'
@@ -89,7 +89,7 @@ Although it is planned to extend the syntax, the current version shares the opti
 rake [rake-options] task1 task2 -- [shared-task-options]
 ```
 
-The double dash ` -- ` delimiter allows to modify the `ARGV` parsing behaviour of `rake`, giving room for **opinionated enhanced syntax**. Anything that comes before the double dash is feed to standard `rake`, and anything after `--` are parsed as option tasks via `rake commander`.
+The double dash ` -- ` delimiter allows to modify the `ARGV` parsing behaviour of `rake`, giving room for **opinionated enhanced syntax**. Anything that comes before the double dash is fed to standard `rake`, and anything after `--` are parsed as option tasks via `rake commander`.
 
 ```
 <rake part> -- [tasks options part]
