@@ -9,15 +9,14 @@ Rake commander is a way to declare **rake tasks** with re-usable classes. It enh
 Although the `OptionParser` ruby native class is used for parsing the options, the declaration of options, additionally to the ones of `OptionParser` comes with some **opinionated improvements** and amendments:
 
   1. It is possible to declare options as `required`
+    - This is additional to required option arguments.
+    - Options are inheritable (they get a custom `deep_dup`)
 
-    * This is additional to required option arguments.
-    * Options are inheritable (they get a custom `deep_dup`)
   2. An option can have a `default` value.
-
-    * Which can optionally be automatically used when the option accepts or requires an argument.
+    - Which can optionally be automatically used when the option accepts or requires an argument.
+    
   3. Options parsing raises specific option errors. For a given task/class, each error type can have its own handler or preferred action.
-
-    * Defined error handling is inheritable and can be redefined.
+    - Defined error handling is inheritable and can be redefined.
 
 ## Installation
 
