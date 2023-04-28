@@ -41,7 +41,7 @@ class RakeCommander
         autoloaded_namespaces(type).tap do |target|
           next if namespaces.empty?
           other_type = type == :include ? :ignore : :include
-          namespaces.each {|nm_sp| autoloaded_namespace(other_type).delete(nm_sp)}
+          namespaces.each {|nm_sp| autoloaded_namespaces(other_type).delete(nm_sp)}
           target.concat(namespaces)
         end
       end

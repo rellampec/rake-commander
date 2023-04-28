@@ -36,6 +36,11 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 ### Changed
 
+## [0.2.2] - 2023-04-29
+
+### Fixed
+  - Typo in `RakeCommander::Base::ClassAutoLoader`
+
 ## [0.2.1] - 2023-04-29
 
 ### Fixed
