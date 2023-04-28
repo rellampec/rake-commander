@@ -77,7 +77,7 @@ It supports most of options syntax of the native `OptionParser` but for a couple
 
 An argument should be explicitly declared in the `name` part:
 
-```
+```ruby
   option :n, '--name NAME'
 ```
 
