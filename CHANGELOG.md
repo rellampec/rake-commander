@@ -43,9 +43,6 @@ All notable changes to this project will be documented in this file.
 ### Added
   - Include Symbol option names in the parsed option results.
 
-### Fixed
-### Changed
-
 ## [0.2.2] - 2023-04-29
 
 ### Fixed
