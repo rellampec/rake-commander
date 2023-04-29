@@ -2,6 +2,8 @@
 All notable changes to this project will be documented in this file.
 
 ## TO DO
+  - `option_reopen` -> upsert should be optional (add `upsert: false` as default an raise missing option if not found)
+    - The error on missing short pops up where it's not clear the short was missed in the option_reopen call.
   - Option results
     - Include the symbol name keys (configurable). Note that dash will be replaced by underscore.
   - Type Coercions
@@ -30,9 +32,17 @@ All notable changes to this project will be documented in this file.
   - Option to globally enable/disable the 2nd patch?
     * That would make this gem completely useless.
 
-## [0.2.3] - 2023-04-xx
+## [0.2.4] - 2023-04-xx
 
 ### Added
+### Fixed
+### Changed
+
+## [0.2.3] - 2023-04-29
+
+### Added
+  - Include Symbol option names in the parsed option results.
+
 ### Fixed
 ### Changed
 

@@ -24,6 +24,7 @@ class RakeCommander::Custom::Chainer < RakeCommander
   option '-m', 'method [METHOD]', default: 'system', desc: str_desc
 
   def task(*_args)
+    print_options if options[:b]
     if options[:c]
       cmd = "#{subcommand_base} -- #{subcommand_arguments.join(' ')}"
       puts "Calling --> '#{cmd}'"
@@ -50,6 +51,11 @@ class RakeCommander::Custom::Chainer < RakeCommander
   end
 
   private
+
+  def print_options
+    puts "These are the options received:"
+    pp options
+  end
 
   def puts(str)
     return super unless options[:b]

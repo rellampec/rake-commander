@@ -148,7 +148,7 @@ class RakeCommander
 
     # Called on parse runtime
     def option_block(&middleware)
-      block_extra_args = [default, short, name]
+      block_extra_args = [default, short, name, self]
       proc do |value|
         args = block_extra_args.dup.unshift(value)
         original_block&.call(*args)

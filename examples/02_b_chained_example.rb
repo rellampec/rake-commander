@@ -8,6 +8,7 @@ class RakeCommander::Custom::Chained < RakeCommander::Custom::Chainer
 
   def task(*_args)
     puts "Called !!"
+    print_options if options[:b]
     puts options[:s] if options[:s]
   end
 end

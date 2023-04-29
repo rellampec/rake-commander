@@ -24,6 +24,12 @@ class RakeCommander
         # It **re-opens** the method and adds a middleware to gather and return
         # the results of the parsing (including the `leftovers`)
         # @note this extends the method parameters and changes the returned value.
+        # @yield [value, default, short, name, option] do somethin  with parsed `value` for `option`
+        # @yieldparam value [] the resulting parsed value
+        # @yieldparam default [] the default value of the option
+        # @yieldparam short [Symbol] the symbol short of the option
+        # @yieldparam name [Symbol] the symbol name of the option
+        # @yieldparam option [RakeCommander::Option] the option that is being parsed
         # @param leftovers [Array<String>] see RakeCommander::Options#parse_options`
         # @param results [Hash] with `short` option as `key` and final value as `value`.
         # @see `RakeCommander::Options#parse_options`
@@ -66,9 +72,9 @@ class RakeCommander
         # @return [Proc] the results collector that wraps the middleware.
         def results_collector(results, &middleware)
           results = result_defaults(results)
-          proc do |value, default, short, name|
-            middleware&.call(value, default, short, name)
-            results[short] = value.nil?? default : value
+          proc do |value, default, short, name, opt|
+            middleware&.call(value, default, short, name, opt)
+            results[name] = results[short] = value.nil?? default : value
           end
         end
 
@@ -79,7 +85,7 @@ class RakeCommander
               (options_with_defaults && opt.default?) \
               || (opt.required? && opt.default?)
             end.each do |opt|
-              res_def[opt.short] = opt.default
+              res_def[opt.name] = res_def[opt.short] = opt.default
             end
           end
         end
