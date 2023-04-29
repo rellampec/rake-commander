@@ -38,15 +38,12 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 ### Changed
 
-## [0.2.4] - 2023-04-xx
+## [0.2.4] - 2023-04-30
 
 ### Added
   - `RakeCommander::Options`
     - `::option_get` retrieves an option by name or short, may it exist.
     - `::option?` to check if an opion exists.
-
-### Fixed
-### Changed
 
 ## [0.2.3] - 2023-04-29
 
