@@ -94,6 +94,18 @@ class RakeCommander
         options_hash.values.uniq
       end
 
+      # @param sym [Symbol] the `name` or `short` of the option.
+      # @return [RakeCommander::Option, NilClass] retrieves the option.
+      def option_get(sym)
+        options_hash[sym.to_sym]
+      end
+
+      # @param sym [Symbol] the `name` or `short` of the option.
+      # @return [Boolean] whether an option has been declared.
+      def option?(sym)
+        options_hash.key?(sym.to_sym)
+      end
+
       # @return [Boolean] are there options defined?
       def options?
         !options.empty?
@@ -149,7 +161,7 @@ class RakeCommander
       def implicit_shorts
         options.each_with_object({}) do |opt, implicit|
           short = opt.short_implicit
-          implicit[short] = opt unless options_hash.key?(short)
+          implicit[short] = opt unless option?(short)
         end
       end
 
@@ -159,7 +171,7 @@ class RakeCommander
       # @note `OptionParser` already has `-h --help` as a native option.
       # @param opts [OptionParser] where the help will be added.
       def option_help(opts)
-        return false if options_hash.key?(:help) || options_hash.key?(:h)
+        return false if option?(:help) || option?(:h)
         option(:h, :help, 'Prints this help') do
           puts opts
           exit(0)
@@ -191,12 +203,12 @@ class RakeCommander
       # @return [RakeCommander::Option, NilClass] the option that was added, `nil` is returned otherwise.
       def add_to_options(opt, override: true)
         name_ref = respond_to?(:name)? " (#{name})" : ''
-        if sprev = options_hash[opt.short]
+        if sprev = option_get(opt.short)
           return nil unless override
           puts "Warning#{name_ref}: Overriding option '#{sprev.name}' with short '#{sprev.short}' ('#{opt.name}')"
           delete_from_options(sprev)
         end
-        if nprev = options_hash[opt.name]
+        if nprev = option_get(opt.name)
           return nil unless override
           puts "Warning#{name_ref}: Overriding option '#{nprev.short}' with name '#{nprev.name}' ('#{opt.short}')"
           delete_from_options(nprev)

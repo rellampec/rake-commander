@@ -32,9 +32,19 @@ All notable changes to this project will be documented in this file.
   - Option to globally enable/disable the 2nd patch?
     * That would make this gem completely useless.
 
+## [0.2.5] - 2023-04-xx
+
+### Added
+### Fixed
+### Changed
+
 ## [0.2.4] - 2023-04-xx
 
 ### Added
+  - `RakeCommander::Options`
+    - `::option_get` retrieves an option by name or short, may it exist.
+    - `::option?` to check if an opion exists.
+
 ### Fixed
 ### Changed
 
