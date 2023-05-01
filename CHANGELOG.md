@@ -37,7 +37,8 @@ All notable changes to this project will be documented in this file.
 ### Added
 ### Fixed
 ### Changed
-
+  - Slight refactor to the patch
+  
 ## [0.3.3] - 2023-05-01
 
 ### Changed
