@@ -32,13 +32,13 @@ All notable changes to this project will be documented in this file.
   - Option to globally enable/disable the 2nd patch?
     * That would make this gem completely useless.
 
-## [0.3.2] - 2023-05-xx
+## [0.3.4] - 2023-05-xx
 
 ### Added
 ### Fixed
 ### Changed
 
-## [0.3.2] - 2023-05-01
+## [0.3.3] - 2023-05-01
 
 ### Changed
   - Replaced the patching method, so the `Rake` application doesn't need re-launch.
