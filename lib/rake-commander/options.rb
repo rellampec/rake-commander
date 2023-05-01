@@ -15,8 +15,9 @@ class RakeCommander
         base.extend ClassMethods
         base.attr_inheritable :banner
         base.attr_inheritable(:options_hash) do |value, subclass|
-          next unless value
+          next nil unless value
           value.values.uniq.each {|opt| subclass.send :add_to_options, opt}
+          subclass.send(:options_hash)
         end
         base.class_resolver :option_class, RakeCommander::Option
         base.send :include, RakeCommander::Options::Result
