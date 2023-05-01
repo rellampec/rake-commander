@@ -125,11 +125,12 @@ class RakeCommander
 
     # @return [Hash] keyed arguments to create a new object
     def dup_key_arguments
+      configure_other
       {}.tap do |kargs|
         kargs.merge!(short:    short.dup.freeze)      if short
         kargs.merge!(name:     name_full.dup.freeze)  if name_full
-        kargs.merge!(desc:     desc.dup)              if desc
-        kargs.merge!(default:  default.dup)           if default?
+        kargs.merge!(desc:     @desc.dup)             if @desc
+        kargs.merge!(default:  @default.dup)          if default?
         kargs.merge!(type:     @type_coercion)        if @type_coercion.is_a?(Class)
         kargs.merge!(required: required?)
       end
@@ -228,17 +229,23 @@ class RakeCommander
 
     # It consumes `other_args`, to prevent direct overrides to be overriden by it.
     def configure_other
-      if type = other_args.find {|arg| arg.is_a?(Class)}
-        @type_coercion = type
-        other_args.delete(type)
-      end
-      if value = other_args.find {|arg| arg.is_a?(String)}
-        @desc = value
-        other_args.dup.each do |val|
-          other_args.delete(val) if val.is_a?(String)
-        end
-      end
+      @type_coertion ||= fetch_type_from_other
+      @desc          ||= fetch_desc_from_other
       nil
+    end
+
+    def fetch_type_from_other
+      return nil unless type = other_args.find {|arg| arg.is_a?(Class)}
+      @type_coercion ||= type
+      other_args.delete(type)
+    end
+
+    def fetch_desc_from_other
+      return nil unless value = other_args.find {|arg| arg.is_a?(String)}
+      @desc ||= value
+      other_args.dup.each do |val|
+        other_args.delete(val) if val.is_a?(String)
+      end
     end
   end
 end

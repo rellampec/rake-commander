@@ -32,11 +32,17 @@ All notable changes to this project will be documented in this file.
   - Option to globally enable/disable the 2nd patch?
     * That would make this gem completely useless.
 
-## [0.2.6] - 2023-05-xx
+## [0.2.7] - 2023-05-xx
 
 ### Added
 ### Fixed
 ### Changed
+  - `RakeCommander::Option` configure_other should only apply when the instance vars are not defined.
+
+## [0.2.6] - 2023-05-01
+
+### Changed
+  - `RakeCommander::Option` configure_other should only apply when the instance vars are not defined.
 
 ## [0.2.5] - 2023-05-01
 
