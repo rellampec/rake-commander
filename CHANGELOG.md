@@ -37,7 +37,6 @@ All notable changes to this project will be documented in this file.
 ### Added
 ### Fixed
 ### Changed
-  - `RakeCommander::Option` configure_other should only apply when the instance vars are not defined.
 
 ## [0.2.6] - 2023-05-01
 
