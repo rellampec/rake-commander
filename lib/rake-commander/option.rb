@@ -151,7 +151,8 @@ class RakeCommander
     def option_block(&middleware)
       block_extra_args = [default, short, name, self]
       proc do |value|
-        args = block_extra_args.dup.unshift(value)
+        value = !value if type_coercion == FalseClass
+        args  = block_extra_args.dup.unshift(value)
         original_block&.call(*args)
         middleware&.call(*args)
       end
