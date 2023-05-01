@@ -38,7 +38,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 ### Changed
 
-## [0.3.1] - 2023-05-01
+## [0.3.2] - 2023-05-01
 
 ### Changed
   - Replaced the patching method, so the `Rake` application doesn't need re-launch.
