@@ -88,8 +88,6 @@ class RakeCommander
       # @param method [Symbol] the parsing method (default is `:parse`; others: `:order`)
       # @return [Array<String>] the **leftovers** of the `OptionParser#parse` call.
       def parse_options(argv = ARGV, method: :parse, &middleware)
-        RakeCommander.rake_comm_debug "(#{name})  P A R S E   O P T I O N S !", "\n", num: 5, pid: true
-        RakeCommander.rake_comm_debug "  ---> ARGV: [#{argv.map {|a| a.nil?? "nil" : "'#{a}'"}.join(', ')}]"
         options_parser(&middleware).send(method, argv)
       end
 
