@@ -13,7 +13,11 @@ class RakeCommander
         base.extend RakeCommander::Base::ClassHelpers
         base.extend RakeCommander::Base::ClassInheritable
         base.extend ClassMethods
-        base.attr_inheritable :banner, :options_hash
+        base.attr_inheritable :banner
+        base.attr_inheritable(:options_hash) do |value, subclass|
+          next unless value
+          value.values.uniq.each {|opt| subclass.send :add_to_options, opt}
+        end
         base.class_resolver :option_class, RakeCommander::Option
         base.send :include, RakeCommander::Options::Result
         base.send :include, RakeCommander::Options::Error
