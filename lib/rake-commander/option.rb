@@ -236,16 +236,15 @@ class RakeCommander
 
     def fetch_type_from_other
       return nil unless type = other_args.find {|arg| arg.is_a?(Class)}
-      @type_coercion ||= type
       other_args.delete(type)
     end
 
     def fetch_desc_from_other
       return nil unless value = other_args.find {|arg| arg.is_a?(String)}
-      @desc ||= value
       other_args.dup.each do |val|
         other_args.delete(val) if val.is_a?(String)
       end
+      value
     end
   end
 end
