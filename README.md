@@ -69,6 +69,27 @@ rspec logging and results
 
 ### Syntax
 
+```ruby
+RakeCommander::Custom::Base < RakeCommander
+  include Rake::DSL
+end
+```
+  * `include Rake::DSL` for backwards compatibility
+
+```ruby
+RakeCommander::Custom::MyTask < RakeCommander::Custom::Base
+  desc "it does some stuff"
+  task :do_stuff
+
+  option :s, '--do-stuff [SOMETHING]', default: 'nothing'
+
+  def task(*_args)
+    puts "Doing #{options[:s]}" if options[:s]
+  end
+end
+```
+
+
 ### Declaring and using Task Options
 
 It supports most of options syntax of the native `OptionParser` but for a couple of exceptions perhaps:
