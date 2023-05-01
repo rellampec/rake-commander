@@ -92,7 +92,9 @@ class RakeCommander
 
     # @return [Class, NilClass]
     def type_coercion
-      @type_coercion || (default? && default.class)
+      value = @type_coercion || (default? && default.class)
+      return nil unless value.is_a?(Class)
+      value
     end
 
     # @return [Boolean]
@@ -230,14 +232,14 @@ class RakeCommander
 
     # It consumes `other_args`, to prevent direct overrides to be overriden by it.
     def configure_other
-      @type_coertion ||= fetch_type_from_other
+      @type_coercion ||= fetch_type_from_other
       @desc          ||= fetch_desc_from_other
       nil
     end
 
     def fetch_type_from_other
       return nil unless type = other_args.find {|arg| arg.is_a?(Class)}
-      other_args.delete(type)
+      type.tap { other_args.delete(type) }
     end
 
     def fetch_desc_from_other

@@ -7,6 +7,7 @@ class RakeCommander::Custom::ChainedPlus < RakeCommander::Custom::Chained
   option :e, '--exit-on-error', TrueClass, desc: 'If it should just exit on "missing argument" error or raise an exception'
   # Move option to the end, make **required** the argument (SOMETHING) as well as the option itself.
   option :s, '--say SOMETHING', "It says 'something'", required: true
+  option :y, '--no-way', FalseClass, "It returns 'true' when used"
 
   error_on_options error: RakeCommander::Options::Error::MissingArgument do |err, _argv, results, _leftovers|
     msg  = "Parsed results when 'missing argument' error was raised"
