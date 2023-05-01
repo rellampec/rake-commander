@@ -198,6 +198,7 @@ class RakeCommander
       # @todo add `exception` parameter, to trigger an exception
       #   when `opt` name or short are taken (and override is `false`)
       # @todo allow to specif if `:tail`, `:top` or `:base` (default)
+      # @note it is the unique access point to add an option.
       # @param opt [RakeCommander::Option] the option to be added.
       # @param override [Boolean] whether we should continue, may this action override (an)other option(s).
       # @return [RakeCommander::Option, NilClass] the option that was added, `nil` is returned otherwise.
