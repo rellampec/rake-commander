@@ -32,11 +32,16 @@ All notable changes to this project will be documented in this file.
   - Option to globally enable/disable the 2nd patch?
     * That would make this gem completely useless.
 
-## [0.2.5] - 2023-04-xx
+## [0.2.6] - 2023-05-xx
 
 ### Added
 ### Fixed
 ### Changed
+
+## [0.2.5] - 2023-05-01
+
+### Changed
+  - `RakeCommander::Base::ClassInheritable#inherited_class_value` now expects a reference to the subclass
 
 ## [0.2.4] - 2023-04-30
 

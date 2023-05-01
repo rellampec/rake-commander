@@ -50,7 +50,7 @@ class RakeCommander
             definitions.each do |var, action|
               instance_var = instance_variable_name(var)
               value        = instance_variable_get(instance_var)
-              child_value  = inherited_class_value(value, method, action)
+              child_value  = inherited_class_value(value, method, action, subclass)
               subclass.instance_variable_set(instance_var, child_value)
             end
           end
@@ -58,14 +58,14 @@ class RakeCommander
       end
 
       # @return [Variant] the value that the child class will inherit
-      def inherited_class_value(value, method, action)
+      def inherited_class_value(value, method, action, subclass)
         case method
         when :mirror
           value
         when :deep_dup
           case action
           when Proc
-            action.call(value)
+            action.call(value, subclass)
           when :default
             custom_deep_dup(value)
           end
