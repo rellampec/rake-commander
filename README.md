@@ -127,10 +127,7 @@ To preserve `rake` as invocation command, though, the patch needs to relaunch th
 
 ### Patching `Rake`
 
-The two patches:
-
-  1. Rake commander does come with a neat patch to the [`Rake::Application#run` method](https://github.com/ruby/rake/blob/48e798484babf725b0562cc417986da513e5d0ae/lib/rake/application.rb#L79) to clean up the `ARGV` before the rake application starts. But it kicks in too late...
-  2. For this reason a more arguable patch has been applied to [`Rake::Application#top_level` method](https://github.com/ruby/rake/blob/48e798484babf725b0562cc417986da513e5d0ae/lib/rake/application.rb#L131), where the rake application is relaunched.
+There is only one patch onto [`Rake::Application#top_level` method](https://github.com/ruby/rake/blob/48e798484babf725b0562cc417986da513e5d0ae/lib/rake/application.rb#L131), [`collect_command_line_tasks`](https://github.com/ruby/rake/blob/48e798484babf725b0562cc417986da513e5d0ae/lib/rake/application.rb#L782) is recalled with the arguments cut (so it does not interpret task option arguments as tasks).
 
 For further details please see [`RakeCommander::Patcher`](https://github.com/rellampec/rake-commander/blob/main/lib/rake-commander/patcher).
 

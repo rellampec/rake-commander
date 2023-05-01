@@ -32,13 +32,18 @@ All notable changes to this project will be documented in this file.
   - Option to globally enable/disable the 2nd patch?
     * That would make this gem completely useless.
 
-## [0.2.13] - 2023-05-xx
+## [0.3.2] - 2023-05-xx
 
 ### Added
 ### Fixed
 ### Changed
 
-## [0.2.12] - 2023-05-xx
+## [0.3.1] - 2023-05-01
+
+### Changed
+  - Replaced the patching method, so the `Rake` application doesn't need re-launch.
+
+## [0.2.12] - 2023-05-01
 
 ### Fixed
   - `RakeCommander::Option#type_coercion` wasn't correctly captured.
