@@ -121,10 +121,6 @@ The double dash ` -- ` delimiter allows to modify the `ARGV` parsing behaviour o
 
 Work has been done with the aim of providing a full patch on `rake`, provided that the main invocation command remains as `rake`.
 
-To preserve `rake` as invocation command, though, the patch needs to relaunch the rake application when it has already started. The reason is that `rake` has already pre-parsed `ARGV` when `rake-commander` is loaded (i.e. from a `Rakefile`) and has identified as tasks things that are part of the task options.
-
-  * For compatibility with tasks declared using `RakeCommander`, the rake application is always relaunched. Anything that does not belong to task options should not be feed to rake tasks declared with rake commander classes.
-
 ### Patching `Rake`
 
 There is only one patch onto [`Rake::Application#top_level` method](https://github.com/ruby/rake/blob/48e798484babf725b0562cc417986da513e5d0ae/lib/rake/application.rb#L131), [`collect_command_line_tasks`](https://github.com/ruby/rake/blob/48e798484babf725b0562cc417986da513e5d0ae/lib/rake/application.rb#L782) is recalled with the arguments cut (so it does not interpret task option arguments as tasks).
