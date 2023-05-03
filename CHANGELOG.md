@@ -2,6 +2,7 @@
 All notable changes to this project will be documented in this file.
 
 ## TO DO
+  - Think if [`binstubs`](https://github.com/rbenv/rbenv/wiki/Understanding-binstubs) would offer a neater patch right on `Rake::Application#init`
   - `option_reopen` -> upsert should be optional (add `upsert: false` as default an raise missing option if not found)
     - The error on missing short pops up where it's not clear the short was missed in the option_reopen call.
   - Option results
@@ -28,9 +29,6 @@ All notable changes to this project will be documented in this file.
     * Example: `on_options(:t, :s, present: true) {|options| do-stuff}` <- block to be called only when the option `:t` and `:s` are both present in the parsed `options` result.
     - Once this has been done,  think about it being a hash-alike object with methods for the option names (i.e. `options.debug?`)
 
-## DISCARDED IMPROVENTS
-  - Option to globally enable/disable the 2nd patch?
-    * That would make this gem completely useless.
 
 ## [0.3.4] - 2023-05-xx
 
@@ -38,7 +36,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 ### Changed
   - Slight refactor to the patch
-  
+
 ## [0.3.3] - 2023-05-01
 
 ### Changed
