@@ -127,9 +127,8 @@ class RakeCommander
       # @see #name_sym
       # @return [Symbol, NilClass]
       def name_word_sym(value)
-        return nil unless value = name_sym(value)
         value = value.to_s.gsub(BOOLEAN_TOKEN, '')
-
+        return nil unless value = name_sym(value)
         return nil unless value = name_words(value).first
         value.downcase.to_sym
       end
