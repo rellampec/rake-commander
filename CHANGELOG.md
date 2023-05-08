@@ -36,9 +36,13 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 ### Changed
 
+## [0.3.5] - 2023-05-08
+
+### Fixed
+  - `RakeCommander::Options#option_reopen` using name to reopen should not redefine if passed as Symbol.
+
 ## [0.3.4] - 2023-05-08
 
-### Added
 ### Fixed
   - `RakeCommand::Option#name` boolean form (`[no-]`) should not be part of the name.
 

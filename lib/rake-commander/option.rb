@@ -32,9 +32,9 @@ class RakeCommander
 
     # Creates a new option, result of merging this `opt` with this option,
     # @return [RakeCommander::Option] where opt has been merged
-    def merge(opt)
+    def merge(opt, **kargs)
       raise "Expecting RakeCommander::Option. Given: #{opt.class}" unless opt.is_a?(RakeCommander::Option)
-      dup(**opt.dup_key_arguments, &opt.original_block)
+      dup(**opt.dup_key_arguments.merge(kargs), &opt.original_block)
     end
 
     # @return [Boolean] whether this option is required.

@@ -44,6 +44,8 @@ class RakeCommander
       end
 
       # It re-opens an option for edition. If it does not exist, it **upserts** it.
+      # @note To allow reopen using the name without modifying the argument, use a Symbol
+      #   Example: `option_reopen :opt_with_arg` will keep the argument of 'opt_with_arg'
       # @note
       #   1. If `override` is `false, it will fail to change the `name` or the `short`
       #     when they are already taken by some other option.
@@ -54,7 +56,10 @@ class RakeCommander
         aux = option_class.new(*args, **kargs, sample: true, &block)
         opt = options_hash.values_at(aux.name, aux.short).compact.first
         return option(*args, **kargs, &block) unless opt
-        replace_in_options(opt, opt.merge(aux), override: override)
+        mod = {}.tap do |mkargs|
+          mkargs.merge!(name: opt.name_full) if aux.name_full.is_a?(Symbol)
+        end
+        replace_in_options(opt, opt.merge(aux, **mod), override: override)
       end
 
       # Removes options with short or name `keys` from options
