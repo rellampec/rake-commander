@@ -30,11 +30,19 @@ All notable changes to this project will be documented in this file.
     - Once this has been done,  think about it being a hash-alike object with methods for the option names (i.e. `options.debug?`)
 
 
-## [0.3.5] - 2023-05-xx
+## [0.3.7] - 2023-05-xx
 
 ### Added
 ### Fixed
 ### Changed
+
+## [0.3.6] - 2023-05-15
+
+### Fixed
+  - `RakeCommander::Options` inheritance of options in `options_hash` was NOT doing a `dup`
+
+### Changed
+  - `RakeCommander::Options#options_hash` made public method
 
 ## [0.3.5] - 2023-05-08
 

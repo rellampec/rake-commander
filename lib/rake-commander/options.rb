@@ -16,7 +16,7 @@ class RakeCommander
         base.attr_inheritable :banner
         base.attr_inheritable(:options_hash) do |value, subclass|
           next nil unless value
-          value.values.uniq.each {|opt| subclass.send :add_to_options, opt}
+          value.values.uniq.each {|opt| subclass.send :add_to_options, opt.dup}
           subclass.send(:options_hash)
         end
         base.class_resolver :option_class, RakeCommander::Option
@@ -96,6 +96,16 @@ class RakeCommander
         options_parser(&middleware).send(method, argv)
       end
 
+      # The options indexed by the short and the name (so doubled up in the hash).
+      # @param with_implicit [Boolean] whether free implicit shorts of declared options should be included
+      #   among the keys (pointing to the specific option that has it implicit).
+      # @return [Hash] with Symbol name and shorts as keys, and `RakeCommander::Option` as values.
+      def options_hash(with_implicit: false)
+        @options_hash ||= {}
+        return @options_hash unless with_implicit
+        @options_hash.merge(implicit_shorts)
+      end
+
       # List of configured options
       # @return [Array<RakeCommander::Option>]
       def options
@@ -146,16 +156,6 @@ class RakeCommander
       def new_options_parser(&block)
         require 'optparse'
         OptionParser.new(&block)
-      end
-
-      # The options indexed by the short and the name (so doubled up in the hash).
-      # @param with_implicit [Boolean] whether free implicit shorts of declared options should be included
-      #   among the keys (pointing to the specific option that has it implicit).
-      # @return [Hash] with Symbol name and shorts as keys, and `RakeCommander::Option` as values.
-      def options_hash(with_implicit: false)
-        @options_hash ||= {}
-        return @options_hash unless with_implicit
-        @options_hash.merge(implicit_shorts)
       end
 
       # This covers the gap where `OptionParser` auto-generates shorts out of option names.
