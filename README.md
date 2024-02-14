@@ -32,6 +32,10 @@ Or install it yourself as:
 
     $ gem install rake-commander
 
+## Changelog
+
+See {file:CHANGELOG.md} for a list of changes.
+
 ## Usage
 
 See [**the `examples`**](https://github.com/rellampec/rake-commander/tree/main/examples).
