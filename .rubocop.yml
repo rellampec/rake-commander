@@ -1,7 +1,5 @@
 AllCops:
   TargetRubyVersion: 3.2.2
-  Exclude:
-    - 'config/routes.rb'
   NewCops: enable
 
 Metrics/ClassLength:
