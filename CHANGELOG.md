@@ -47,6 +47,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- require `ruby 3`
+
 ## [0.3.6] - 2023-05-15
 
 ### Fixed

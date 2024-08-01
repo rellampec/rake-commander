@@ -12,17 +12,18 @@ Gem::Specification.new do |spec|
   spec.homepage      = "https://github.com/rellampec/rake-commander"
   spec.licenses      = %w[MIT]
 
-  spec.files         = `git ls-files -z`.split("\x0").reject do |f|
+  spec.metadata['rubygems_mfa_required'] = 'true'
+
+  spec.required_ruby_version = '>= 3.2.2'
+
+  spec.files = `git ls-files -z`.split("\x0").reject do |f|
     f.match(%r{^(test|spec|features)/})
   end
   spec.bindir        = "exe"
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.required_ruby_version = '>= 2.7.2'
-
-  spec.add_development_dependency "bundler",   ">= 2.4.9",  "< 3"
-  spec.add_development_dependency 'dotenv',    '>= 2.7.6',  '< 3'
+  spec.add_development_dependency 'dotenv',    '~> 3'
   spec.add_development_dependency "rake",      ">= 13.0.6", "< 14"
   spec.add_development_dependency "redcarpet", ">= 3.6.0",  "< 4"
   spec.add_development_dependency "rspec",     ">= 3.10.0", "< 4"
