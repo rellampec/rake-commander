@@ -41,10 +41,6 @@ All notable changes to this project will be documented in this file.
 
 ## [0.4.0] - 2023-08-01
 
-### Added
-
-### Fixed
-
 ### Changed
 
 - require `ruby 3`
