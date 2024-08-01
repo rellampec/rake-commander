@@ -1,80 +1,95 @@
 AllCops:
-  TargetRubyVersion: 2.7.2
+  TargetRubyVersion: 3.2.2
   Exclude:
     - 'config/routes.rb'
+  NewCops: enable
 
-Naming/VariableNumber:
-  EnforcedStyle: snake_case
-Naming/FileName:
-  Enabled: false
-
-Metrics/LineLength:
-  Enabled: false
-Metrics/BlockLength:
-  ExcludedMethods: [context, describe]
-  Max: 50
+Metrics/ClassLength:
+  Max: 500
+Metrics/ModuleLength:
+  Max: 300
 Metrics/MethodLength:
   Max: 50
-Metrics/ClassLength:
-  Max: 200
-Metrics/ModuleLength:
-  Max: 200
 Metrics/AbcSize:
-  Max: 50
-Metrics/CyclomaticComplexity:
-  Max: 10
-Metrics/PerceivedComplexity:
-  Max: 10
-
-ParameterLists:
+  Max: 30
+Metrics/ParameterLists:
   Max: 5
   CountKeywordArgs: false
+Metrics/BlockLength:
+  CountAsOne: ['array', 'heredoc', 'method_call']
+  Max: 50
+Metrics/CyclomaticComplexity:
+  Max: 30
+Metrics/PerceivedComplexity:
+  Max: 30
 
-Style/Alias:
-  EnforcedStyle: prefer_alias_method
-Style/StringLiterals:
+Style/AccessorGrouping:
+  Enabled: false
+Style/ConditionalAssignment:
+  Enabled: false
+Style/BlockDelimiters:
+  BracesRequiredMethods: ['log']
+  AllowedPatterns: ['proc', 'new']
+Style/ClassAndModuleChildren:
   Enabled: false
 Style/FrozenStringLiteralComment:
+  Enabled: false
+Style/StringLiterals:
+  Enabled: false
+Style/StringLiteralsInInterpolation:
+  Enabled: false
+Style/Documentation:
   Enabled: false
 Style/CommentedKeyword:
   Enabled: false
 Style/MultilineBlockChain:
   Enabled: false
-Style/Documentation:
-  Enabled: false
-Style/StringLiteralsInInterpolation:
-  Enabled: false
 Style/AndOr:
   Enabled: false
-Style/SlicingWithRange:
+Style/Alias:
+  EnforcedStyle: prefer_alias_method
+Style/FetchEnvVar:
   Enabled: false
-Style/ClassAndModuleChildren:
-  Enabled: false
-Style/OptionalBooleanParameter:
-  Enabled: false
+Style/RegexpLiteral:
+  EnforcedStyle: mixed
+  AllowInnerSlashes: true
 
 Layout/HashAlignment:
   EnforcedColonStyle: table
-Layout/ExtraSpacing:
-  AllowForAlignment: true
-Layout/AccessModifierIndentation:
-  EnforcedStyle: indent
-Layout/DotPosition:
-  EnforcedStyle: trailing
-Layout/MultilineMethodCallIndentation:
-  EnforcedStyle: indented
+  EnforcedHashRocketStyle: table
+Layout/LeadingCommentSpace:
+  Enabled: false
+  AllowGemfileRubyComment: true
+Layout/ParameterAlignment:
+  Enabled: false
+Layout/MultilineMethodDefinitionBraceLayout:
+  EnforcedStyle: symmetrical
+Layout/LineLength:
+  Enabled: true
 Layout/SpaceInsideHashLiteralBraces:
   Enabled: false
 Layout/SpaceInsideBlockBraces:
   Enabled: false
 Layout/SpaceAroundOperators:
   Enabled: false
+Layout/ExtraSpacing:
+  AllowForAlignment: true
+  AllowBeforeTrailingComments: true
+Layout/AccessModifierIndentation:
+  EnforcedStyle: indent
+Layout/DotPosition:
+  EnforcedStyle: trailing
+Layout/MultilineMethodCallIndentation:
+  EnforcedStyle: indented
 Layout/FirstHashElementIndentation:
   Enabled: false
 Layout/EmptyLineAfterGuardClause:
   Enabled: false
-Layout/LeadingCommentSpace:
-  Enabled: false
 
-Lint/AssignmentInCondition:
+Naming/VariableNumber:
+  EnforcedStyle: snake_case
+  CheckSymbols: false
+Naming/MethodParameterName:
+  AllowedNames: ['x', 'y', 'i', 'j', 'id', 'io', 'to']
+Naming/RescuedExceptionsVariableName:
   Enabled: false
