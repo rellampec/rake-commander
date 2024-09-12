@@ -10,8 +10,9 @@ class RakeCommander::Custom::ChainerPlus < RakeCommander::Custom::Chainer
   # Update option description
   option_reopen :chain, desc: "Calls: '< rake|raked > #{TARGET_TASK} task'"
   # Extend with new options
-  option :e, '--exit-on-error', TrueClass, \
-         desc: "Whether #{TARGET_TASK} should just exit on 'missing argument' error (or raise an exception)"
+  option \
+    :e, '--exit-on-error', TrueClass,
+    desc: "Whether #{TARGET_TASK} should just exit on 'missing argument' error (or raise an exception)"
   option :o, '--hello NAME', String, desc: 'It greets.'
 
   # Make it default to `exit 1` when there are errors
