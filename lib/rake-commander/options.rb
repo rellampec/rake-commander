@@ -9,16 +9,20 @@ class RakeCommander
   module Options
     class << self
       def included(base)
-        super(base)
+        super
+
         base.extend RakeCommander::Base::ClassHelpers
         base.extend RakeCommander::Base::ClassInheritable
         base.extend ClassMethods
         base.attr_inheritable :banner
+
         base.attr_inheritable(:options_hash) do |value, subclass|
-          next nil unless value
+          next unless value
+
           value.values.uniq.each {|opt| subclass.send :add_to_options, opt.dup}
           subclass.send(:options_hash)
         end
+
         base.class_resolver :option_class, RakeCommander::Option
         base.send :include, RakeCommander::Options::Result
         base.send :include, RakeCommander::Options::Error
@@ -30,8 +34,9 @@ class RakeCommander
       # Overrides the auto-generated banner
       def banner(desc = :not_used)
         return @banner = desc unless desc == :not_used
-        return @banner if @banner
-        return task_options_banner if respond_to?(:task_options_banner, true)
+        return @banner        if @banner
+
+        task_options_banner   if respond_to?(:task_options_banner, true)
       end
 
       # Defines a new option or opens for edition an existing one if `reopen: true` is used.
@@ -39,6 +44,7 @@ class RakeCommander
       #   - If override is `true`, it will with a Warning when same `short` or `name` clashes.
       def option(*args, override: true, reopen: false, **kargs, &block)
         return option_reopen(*args, override: override, **kargs, &block) if reopen
+
         opt = option_class.new(*args, **kargs, &block)
         add_to_options(opt, override: override)
       end
@@ -56,6 +62,7 @@ class RakeCommander
         aux = option_class.new(*args, **kargs, sample: true, &block)
         opt = options_hash.values_at(aux.name, aux.short).compact.first
         return option(*args, **kargs, &block) unless opt
+
         mod = {}.tap do |mkargs|
           mkargs.merge!(name: opt.name_full) if aux.name_full.is_a?(Symbol)
         end
@@ -78,9 +85,11 @@ class RakeCommander
       # @param options [Enumerable<RakeCommander::Option>]
       def options_use(opts, override: true)
         raise "Could not obtain list of RakeCommander::Option from #{opts.class}" unless opts = to_options(opts)
+
         opts.each do |opt|
           add_to_options(opt.deep_dup, override: override)
         end
+
         self
       end
 
@@ -103,6 +112,7 @@ class RakeCommander
       def options_hash(with_implicit: false)
         @options_hash ||= {}
         return @options_hash unless with_implicit
+
         @options_hash.merge(implicit_shorts)
       end
 
@@ -180,6 +190,7 @@ class RakeCommander
       # @param opts [OptionParser] where the help will be added.
       def option_help(opts)
         return false if option?(:help) || option?(:h)
+
         option(:h, :help, 'Prints this help') do
           puts opts
           exit(0)
@@ -212,16 +223,19 @@ class RakeCommander
       # @return [RakeCommander::Option, NilClass] the option that was added, `nil` is returned otherwise.
       def add_to_options(opt, override: true)
         name_ref = respond_to?(:name)? " (#{name})" : ''
-        if sprev = option_get(opt.short)
+        if (sprev = option_get(opt.short))
           return nil unless override
           puts "Warning#{name_ref}: Overriding option '#{sprev.name}' with short '#{sprev.short}' ('#{opt.name}')"
           delete_from_options(sprev)
         end
-        if nprev = option_get(opt.name)
-          return nil unless override
+
+        if (nprev = option_get(opt.name))
+          return unless override
+
           puts "Warning#{name_ref}: Overriding option '#{nprev.short}' with name '#{nprev.name}' ('#{opt.short}')"
           delete_from_options(nprev)
         end
+
         options_hash[opt.name] = options_hash[opt.short] = opt
       end
 
@@ -245,6 +259,7 @@ class RakeCommander
         add_to_options(opt, override: override).tap do |added_opt|
           # restore previous status
           next options_hash[ref.short] = options_hash[ref.name] = ref unless added_opt
+
           delete_empty_keys(options_hash)
         end
       end
@@ -254,6 +269,7 @@ class RakeCommander
         hash.tap do |_h|
           hash.dup.each do |k, v|
             next unless v.nil?
+
             hash.delete(k)
           end
         end
