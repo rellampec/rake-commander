@@ -3,12 +3,12 @@ class RakeCommander
     # Offers helpers to treat `ARGV`
     module Arguments
       RAKE_COMMAND_EXTENDED_OPTIONS_START = '--'.freeze
-      NAME_ARGUMENT    = /^--(?<option>[\w_-]*).*?$/.freeze
-      BOOLEAN_ARGUMENT = /(?:^|--)no-(?<option>[\w_-]*).*?$/.freeze
+      NAME_ARGUMENT    = /^--(?<option>[\w_-]*).*?$/
+      BOOLEAN_ARGUMENT = /(?:^|--)no-(?<option>[\w_-]*).*?$/
 
       class << self
         def included(base)
-          super(base)
+          super
           base.extend ClassMethods
         end
       end
@@ -20,6 +20,7 @@ class RakeCommander
         # @return [Boolean] whether enhanced parsing should be switched on or off.
         def argv_with_enhanced_syntax?(argv = ARGV)
           return false unless argv.is_a?(Array)
+
           argv.include?(RAKE_COMMAND_EXTENDED_OPTIONS_START)
         end
 
@@ -41,6 +42,7 @@ class RakeCommander
         def argv_cropping_for_rake(value = :not_used)
           @argv_cropping_for_rake = true if @argv_cropping_for_rake.nil?
           return @argv_cropping_for_rake if value == :not_used
+
           @argv_cropping_for_rake = !!value
         end
 
@@ -51,8 +53,8 @@ class RakeCommander
         # @param argv [Array<String>] the command line arguments array.
         # @return [Array<String>] the target arguments to be parsed by `RakeCommander::Options`
         def argv_extended_options(argv = ARGV.dup)
-          if idx = argv.index(RAKE_COMMAND_EXTENDED_OPTIONS_START)
-            argv[idx+1..-1]
+          if (idx = argv.index(RAKE_COMMAND_EXTENDED_OPTIONS_START))
+            argv[idx + 1..]
           else
             []
           end
@@ -63,9 +65,11 @@ class RakeCommander
         # @return [Array<String>] the argv without the extended options of this gem.
         def argv_rake_native_arguments(argv = ARGV.dup)
           return argv unless argv_cropping_for_rake
-          if idx = argv.index(RAKE_COMMAND_EXTENDED_OPTIONS_START)
+
+          if (idx = argv.index(RAKE_COMMAND_EXTENDED_OPTIONS_START))
             argv = argv[0..idx]
           end
+
           argv
         end
 
@@ -77,10 +81,10 @@ class RakeCommander
         #     - So some tidy up is necessary and the head of the command (i.e. `rake some:task --`)
         #       should be excluded from arguments to input to the options parser.
         # @see `RakeCommander::Options#parse_options`
-        def parse_options(argv = ARGV, *args, **kargs, &block)
+        def parse_options(argv = ARGV, *_args, **_kargs)
           argv = argv_extended_options(argv)
           argv = argv_pre_parsed(argv, options: options_hash(with_implicit: true))
-          super(argv, *args, **kargs, &block)
+          super
         end
 
         # Options with arguments should not take another option as value.
@@ -109,8 +113,10 @@ class RakeCommander
           compact_short = ''
           pre_parsed.each_with_object([]) do |(opt_ref, args), out|
             next out.push(*args) unless opt_ref.is_a?(Symbol)
+
             is_short = opt_ref.to_s.length == 1
             next compact_short << opt_ref.to_s if is_short && args.empty?
+
             out.push("-#{compact_short}") unless compact_short.empty?
             compact_short = ''
             opt_str = is_short ? "-#{opt_ref}" : name_hyphen(opt_ref)
@@ -163,14 +169,17 @@ class RakeCommander
         # @param groups [@see #pair_symbols_with_strings]
         def insert_missing_argument_to_groups(groups, options)
           groups.each do |group|
-            args = group.dup
+            args    = group.dup
             opt_ref = args.shift
+
             next unless args.empty?
             next unless opt_ref.is_a?(Symbol)
-            next unless opt = _retrieve_option_ref(opt_ref, options)
+            next unless (opt = _retrieve_option_ref(opt_ref, options))
             next unless opt.argument?
+
             next group.push(opt.default) if opt.default?
-            next unless opt.argument_required?
+            next                         unless opt.argument_required?
+
             group.push(nil)
           end
         end
@@ -180,11 +189,13 @@ class RakeCommander
         # @return [RakeCommander::Option, NilClass]
         def _retrieve_option_ref(opt_ref, options)
           opt = options[opt_ref]
-          return opt if     opt
-          return nil unless match   = opt_ref.to_s.match(BOOLEAN_ARGUMENT)
-          return nil unless opt_ref = match[:option]
-          return nil unless opt     = options[opt_ref.to_sym]
-          return nil unless opt.boolean_name?
+
+          return opt if opt
+          return     unless (match   = opt_ref.to_s.match(BOOLEAN_ARGUMENT))
+          return     unless (opt_ref = match[:option])
+          return     unless (opt     = options[opt_ref.to_sym])
+          return     unless opt.boolean_name?
+
           opt
         end
 
@@ -193,6 +204,7 @@ class RakeCommander
         def group_symbols_with_strings(argv)
           [].tap do |out|
             curr_ary = nil
+
             argv.each do |arg|
               if arg.is_a?(Symbol)
                 out << (curr_ary = [arg])
