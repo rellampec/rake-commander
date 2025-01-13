@@ -66,6 +66,7 @@ class RakeCommander
         mod = {}.tap do |mkargs|
           mkargs.merge!(name: opt.name_full) if aux.name_full.is_a?(Symbol)
         end
+
         replace_in_options(opt, opt.merge(aux, **mod), override: override)
       end
 

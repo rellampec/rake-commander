@@ -3,19 +3,20 @@ class RakeCommander
     module Name
       BOOLEAN_TOKEN       = '[no-]'.freeze
       # Substitions
-      HYPHEN_START_REGEX  = /^-+/.freeze
-      HYPEN_REGEX         = /-+/.freeze
-      UNDERSCORE_REGEX    = /_+/.freeze
-      WORD_DELIMITER      = /[\s=]+/.freeze
+      HYPHEN_START_REGEX  = /^-+/
+      HYPEN_REGEX         = /-+/
+      UNDERSCORE_REGEX    = /_+/
+      WORD_DELIMITER      = /[\s=]+/
       # Checkers / Capturers
-      OPTIONAL_REGEX      = /\[\w+\]$/.freeze
-      SINGLE_HYPHEN_REGEX = /^-(?<options>[^- ][^ ]*)/.freeze
-      DOUBLE_HYPHEN_REGEX = /^(?:--\[?no-\]?|--)(?<option>[^- ][^ \r\n]*).*$/.freeze
-      BOOLEAN_NAME_REGEX  = /^[^ ]*#{Regexp.escape(BOOLEAN_TOKEN)}[^ ]{2,}/.freeze
+      OPTIONAL_REGEX      = /\[\w+\]$/
+      SINGLE_HYPHEN_REGEX = /^-(?<options>[^- ][^ ]*)/
+      DOUBLE_HYPHEN_REGEX = /^(?:--\[?no-\]?|--)(?<option>[^- ][^ \r\n]*).*$/
+      BOOLEAN_NAME_REGEX  = /^[^ ]*#{Regexp.escape(BOOLEAN_TOKEN)}[^ ]{2,}/
 
       # @return [Boolean]
       def single_hyphen?(value)
         return false unless value.respond_to?(:to_s)
+
         !!value.to_s.match(SINGLE_HYPHEN_REGEX)
       end
 
@@ -28,6 +29,7 @@ class RakeCommander
       # @return [Boolean] whether the name has the boolean switch `[no-]`
       def boolean_name?(value)
         return false unless value.respond_to?(:to_s)
+
         !!value.to_s.match(BOOLEAN_NAME_REGEX)
       end
 
@@ -35,9 +37,11 @@ class RakeCommander
       # @return [Boolean]
       def valid_short?(value, strict: false)
         return false unless value.respond_to?(:to_s)
+
         value = value.to_s.strip
         return false if value.empty?
         return false if strict && !single_hyphen?(value)
+
         value = value.gsub(HYPHEN_START_REGEX, '')
         value.length == 1
       end
@@ -46,9 +50,11 @@ class RakeCommander
       # @return [Boolean]
       def valid_name?(value, strict: false)
         return false unless value.respond_to?(:to_s)
+
         value = value.to_s.strip
         return false if value.empty?
         return false if strict && !double_hyphen?(value)
+
         name_sym(value).to_s.length > 1
       end
 
@@ -59,6 +65,7 @@ class RakeCommander
         capture_argument_with!(args) do |arg|
           next false unless arg.is_a?(String) || arg.is_a?(Symbol)
           next false if symbol && !arg.is_a?(Symbol)
+
           valid_short?(arg, strict: strict)
         end
       end
@@ -70,6 +77,7 @@ class RakeCommander
         capture_argument_with!(args) do |arg|
           next false unless arg.is_a?(String) || arg.is_a?(Symbol)
           next false if symbol && !arg.is_a?(Symbol)
+
           valid_name?(arg, strict: strict)
         end
       end
@@ -79,13 +87,16 @@ class RakeCommander
       # @return [String, Symbol, NilClass] the arg candidate
       def capture_argument_with!(args)
         raise ArgumentError, "Expecting Array. Given: #{args.class}" unless args.is_a?(Array)
+
         args.dup.find.with_index do |arg, i|
           yield(arg).tap do |valid|
             next unless valid
+
             args.slice!(i)
             return arg
           end
         end
+
         nil
       end
 
@@ -94,10 +105,12 @@ class RakeCommander
       #   * `"-d"` becomes `:d`
       # @return [Symbol, NilClass]
       def short_sym(value)
-        return nil unless value
+        return unless value
+
         value = value.to_s.gsub(BOOLEAN_TOKEN, '')
         value = value.gsub(HYPHEN_START_REGEX, '')
-        return nil unless value = value.chars.first
+        return unless value = value.chars.first
+
         value.to_sym
       end
 
@@ -110,11 +123,13 @@ class RakeCommander
       #   3. Replaces any multi-spacing by single space ` `
       # @return [Symbol, NilClass]
       def name_sym(value)
-        return nil unless value
+        return unless value
+
         value = value.to_s.gsub(HYPHEN_START_REGEX, '')
         value = value.gsub(HYPEN_REGEX, '_')
         value = value.gsub(WORD_DELIMITER, ' ')
-        return nil if value.empty?
+        return if value.empty?
+
         value.to_sym
       end
 
@@ -128,14 +143,16 @@ class RakeCommander
       # @return [Symbol, NilClass]
       def name_word_sym(value)
         value = value.to_s.gsub(BOOLEAN_TOKEN, '')
-        return nil unless value = name_sym(value)
-        return nil unless value = name_words(value).first
+        return unless (value = name_sym(value))
+        return unless (value = name_words(value).first)
+
         value.downcase.to_sym
       end
 
       # @return [String, NilClass] it returns the hyphened (`-`) version of a short `value`
       def short_hyphen(value)
-        return nil unless value = short_sym(value)
+        return unless (value = short_sym(value))
+
         "-#{value}"
       end
 
@@ -146,9 +163,11 @@ class RakeCommander
       #   * `:there_we_go` becomes `"--there-we-go"`
       # @return [String, NilClass] option `name` alone double hypened (`--`)
       def name_hyphen(value)
-        return nil unless value = name_sym(value)
+        return unless value = name_sym(value)
+
         value = value.to_s.gsub(UNDERSCORE_REGEX, '-')
-        return nil if value.empty?
+        return if value.empty?
+
         "--#{value}"
       end
 
@@ -174,6 +193,7 @@ class RakeCommander
       # @return [Boolean] `true` if `value` does NOT end with `[String]`
       def argument_required?(value)
         return false unless value
+
         !argument_optional?(value)
       end
 
@@ -185,6 +205,7 @@ class RakeCommander
       # @return [Boolean] `true` if `value` ends with `[String]`
       def argument_optional?(value)
         return true unless value
+
         !!value.match(OPTIONAL_REGEX)
       end
 
@@ -194,7 +215,8 @@ class RakeCommander
       #   * `"--there-we-go   [ARGUMENT]"` returns `["there-we-go","[ARGUMENT]"]`
       # @return [Array<String>] the words of `value` without hyphen start
       def name_words(value)
-        return nil unless value
+        return unless value
+
         value = value.to_s.gsub(HYPHEN_START_REGEX, '')
         value.to_s.split(WORD_DELIMITER)
       end

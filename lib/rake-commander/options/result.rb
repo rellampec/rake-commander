@@ -3,7 +3,7 @@ class RakeCommander
     module Result
       class << self
         def included(base)
-          super(base)
+          super
           base.extend ClassMethods
           base.attr_inheritable :options_with_defaults
         end
@@ -57,6 +57,7 @@ class RakeCommander
         def task_context(&task_method)
           instance = eval('self', task_method.binding, __FILE__, __LINE__)
           return task_method unless instance.is_a?(self)
+
           proc do |*task_args|
             # launch `ARGV` parsing
             instance.options
@@ -72,6 +73,7 @@ class RakeCommander
         # @return [Proc] the results collector that wraps the middleware.
         def results_collector(results, &middleware)
           results = result_defaults(results)
+
           proc do |value, default, short, name, opt|
             middleware&.call(value, default, short, name, opt)
             results[name] = results[short] = value.nil?? default : value
@@ -91,10 +93,13 @@ class RakeCommander
         end
       end
 
+      # INSTANCE METHODS
+
       # Launches the options parsing of this class.
       # @return [Hash] keyed by short.
       def options(argv = ARGV, &block)
         return @options if instance_variable_defined?(:@options)
+
         @options = {}
         self.class.parse_options(argv, results: @options, leftovers: options_leftovers, &block)
         @options
