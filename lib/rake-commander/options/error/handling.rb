@@ -4,7 +4,8 @@ class RakeCommander
       module Handling
         class << self
           def included(base)
-            super(base)
+            super
+
             base.extend RakeCommander::Base::ClassHelpers
             base.extend RakeCommander::Base::ClassInheritable
             base.extend ClassMethods
@@ -82,9 +83,10 @@ class RakeCommander
             action = error_on_options(error: eklass)
 
             # here is where we ignore the handler (when !action == `true`)
-            raise            unless !action || handler = error_on_options_handler(eklass)
+            raise            unless !action || (handler = error_on_options_handler(eklass))
             raise            if handler&.call(e, argv, results, leftovers)
             return leftovers if action == :continue
+
             puts e.message
             # https://stackoverflow.com/a/23340693/4352306
             exit 1
@@ -95,7 +97,13 @@ class RakeCommander
           def error_on_options_handler(error = :not_used, &handler)
             @error_on_options_handler        ||= {}
             return @error_on_options_handler if error == :not_used
-            RakeCommander::Options::Error::Base.require_argument!(error, :error, accept_children: true)
+
+            RakeCommander::Options::Error::Base.require_argument!(
+              error,
+              :error,
+              accept_children: true
+            )
+
             @error_on_options_handler[error] = handler if block_given?
             @error_on_options_handler[error]
           end
