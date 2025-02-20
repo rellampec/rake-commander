@@ -31,7 +31,8 @@ All notable changes to this project will be documented in this file.
   - Example: `on_options(:t, :s, present: true) {|options| do-stuff}` <- block to be called only when the option `:t` and `:s` are both present in the parsed `options` result.
   - Once this has been done,  think about it being a hash-alike object with methods for the option names (i.e. `options.debug?`)
 
-## [0.4.1] - 2025-02-xx
+
+## [0.4.1] - 2025-02-20
 
 ### Added
 
