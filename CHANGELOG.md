@@ -39,6 +39,8 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Description: break lines should be respected.
+
 ### Changed
 
 - Allow multiple `desc` declarations to be aligned with `OptsParser` behaviour.
