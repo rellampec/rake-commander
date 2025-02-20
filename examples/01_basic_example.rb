@@ -14,9 +14,7 @@ class RakeCommander::Custom::BasicExample < RakeCommander
   option '-e', :'--enviro ENV', 'The target environment to run this task', required: true
   option :v, :debug, TrueClass, 'Shows the parsed options'
   option :V, '[no-]verbose', 'Verbosity', TrueClass
-
-  option :l, '--colour COLOUR', type: (colours = %i[red yellow green blue]),
-    desc: "Choose a colour. Options: [#{colours.join(', ')}]"
+  option :l, '--colour COLOUR', "Choose a colour", type: %i[red yellow green blue]
   #option :f, :folder, required: false, reopen: true
 
   def task(*_args)

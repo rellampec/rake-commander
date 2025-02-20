@@ -192,7 +192,7 @@ class RakeCommander
     # @return [Array<String>]
     def switch_desc(implicit_short: false, line_width: DESC_MAX_LENGTH)
       ishort = implicit_short ? "( -#{short_implicit} ) " : ''
-      str    = "#{required_desc}#{ishort}#{desc}#{default_desc}"
+      str    = "#{required_desc}#{ishort}#{desc}#{enum_desc}#{default_desc}"
       return [] if str.empty?
 
       string_to_lines(str, max: line_width)
@@ -206,6 +206,12 @@ class RakeCommander
       return unless default?
 
       " { Default: '#{default}' }"
+    end
+
+    def enum_desc
+      return unless enum?
+
+      " Options: [ #{enum_options.join(' | ')} ]."
     end
 
     # Helper to simplify `short` and `name` capture from arguments and keyed arguments.
