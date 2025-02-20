@@ -10,7 +10,8 @@ class RakeCommander
   module Base
     class << self
       def included(base)
-        super(base)
+        super
+
         base.extend RakeCommander::Base::ClassAutoLoader
         base.autoloads_children_of RakeCommander
 

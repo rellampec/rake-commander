@@ -2,12 +2,13 @@ require_relative 'rake_context/wrapper'
 
 class RakeCommander
   module RakeTask
-    NAMESPACE_DELIMITER = /:/.freeze
+    NAMESPACE_DELIMITER = /:/
     INHERITABLE_ATTRS   = [:namespace].freeze
 
     class << self
       def included(base)
-        super(base)
+        super
+
         base.extend RakeCommander::Base::ClassHelpers
         base.extend RakeCommander::Base::ClassInheritable
         base.extend ClassMethods
@@ -25,6 +26,7 @@ class RakeCommander
       # @return [String] the description of the task
       def desc(str = :not_used)
         return @desc if str == :not_used
+
         @desc = str.to_s
       end
 
@@ -32,6 +34,7 @@ class RakeCommander
       # @return [Symbol] the task name
       def task(name = :not_used)
         return @task if name == :not_used
+
         @task = name.to_sym
       end
 
@@ -39,6 +42,7 @@ class RakeCommander
       # @return [String] the namespace defined for this `RakeCommander` class.
       def namespace(name = :not_used)
         return @namespace if name == :not_used
+
         @namespace = namespace_str(name)
       end
 
@@ -65,6 +69,7 @@ class RakeCommander
         block  = spaces.reverse.reduce(block) do |blk, nm|
           namespace_block(nm, &blk)
         end
+
         rake.namespace top, &block
       end
 
@@ -97,7 +102,10 @@ class RakeCommander
       def namespace_str(name)
         name = name.to_s   if name.is_a?(Symbol)
         name = name.to_str if name.respond_to?(:to_str)
-        raise ArgumentError, "Expected a String or Symbol for a namespace name. Given: #{name.class}" unless name.is_a?(String)
+
+        msg = "Expected a String or Symbol for a namespace name. Given: #{name.class}"
+        raise ArgumentError, msg unless name.is_a?(String)
+
         name
       end
 
@@ -144,7 +152,8 @@ class RakeCommander
     protected
 
     def install_task
-      return unless task_block = task_method
+      return unless (task_block = task_method)
+
       self.class.install_task(&task_block)
     end
 
