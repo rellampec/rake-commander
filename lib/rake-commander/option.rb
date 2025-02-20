@@ -4,6 +4,7 @@ class RakeCommander
     extend RakeCommander::Base::ClassHelpers
     extend RakeCommander::Options::Name
     include RakeCommander::Options::Description
+    include RakeCommander::Options::Type
 
     attr_reader :name_full, :desc, :default
 
@@ -249,19 +250,17 @@ class RakeCommander
     # It consumes `other_args`, to prevent direct overrides to be overriden by it.
     # @note at the end we will pass the switch arguments to OptsParser.
     def configure_other
-      @type_coercion ||= fetch_type_from_other
-      @desc            = fetch_desc_from_other(@desc)
+      @type_coercion = fetch_type_from_other(@type_coercion)
+      @desc          = fetch_desc_from_other(@desc)
       nil
     end
 
-    def fetch_type_from_other
-      other_args.find do |arg|
-        arg.is_a?(Class)
-      end.tap do |type|
-        next unless type
+    def fetch_type_from_other(original = nil)
+      type = fetch_type!(other_args)
 
-        other_args.delete(type)
-      end
+      return original if original
+
+      type
     end
 
     def fetch_desc_from_other(original = nil)

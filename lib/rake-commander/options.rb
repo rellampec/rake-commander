@@ -1,5 +1,6 @@
 require_relative 'options/name'
 require_relative 'options/description'
+require_relative 'options/type'
 require_relative 'options/arguments'
 require_relative 'options/result'
 require_relative 'options/error'
