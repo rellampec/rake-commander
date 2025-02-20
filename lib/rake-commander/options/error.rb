@@ -37,12 +37,21 @@ class RakeCommander
             raise eklass.new(from: self, option: opt), msg, cause: nil
           rescue OptionParser::InvalidArgument => e
             eklass = RakeCommander::Options::Error::InvalidArgument
+            src_e  = nil
+            msg    = nil
             opt    = error_option(e, eklass)
-            raise eklass.new(e, from: self, option: opt), nil, cause: nil unless opt&.argument_required?
 
-            eklass = RakeCommander::Options::Error::MissingArgument
-            msg = "missing required argument in option: #{opt.name_hyphen} (#{opt.short_hyphen})"
-            raise eklass.new(from: self, option: opt), msg, cause: nil
+            if opt&.enum?
+              msg  = "argument in option #{opt.name_hyphen} (#{opt.short_hyphen}) "
+              msg << "should be any of [#{opt.enum_options.join(' | ')}]"
+            elsif opt&.argument_required?
+              eklass = RakeCommander::Options::Error::MissingArgument
+              msg    = "missing required argument in option: #{opt.name_hyphen} (#{opt.short_hyphen})"
+            else
+              src_e  = e
+            end
+
+            raise eklass.new(src_e, from: self, option: opt), msg, cause: nil
           end
         end
 
