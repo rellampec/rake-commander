@@ -4,7 +4,7 @@ class RakeCommander
       # Base error class that does a rely between OptionParser and RakeCommander errors
       class Base < RakeCommander::Base::CustomError
         extend RakeCommander::Options::Name
-        OPTION_REGEX = /(?:argument|option): (?<option>.+)/i.freeze
+        OPTION_REGEX = /(?:argument|option): (?<option>.+)/i
 
         class << self
           # Helper to check if `error` is this class or any children class
@@ -20,14 +20,17 @@ class RakeCommander
           def option_regex(value = :not_used)
             @option_regex ||= OPTION_REGEX
             return @option_regex if value == :not_used
+
             @option_regex = value
           end
 
           # Identifies the option `Symbol` (short or name) for a given message
           def option_sym(message)
-            return nil unless match = message.match(option_regex)
+            return unless (match = message.match(option_regex))
+
             option = match[:option]
             return name_word_sym(option) if option.length > 1
+
             short_sym(option)
           end
         end
@@ -59,6 +62,7 @@ class RakeCommander
 
         def from_desc
           return '' unless from
+
           if from.respond_to?(:name)
             "(#{from.name}) "
           elsif from.respond_to?(:to_s)
