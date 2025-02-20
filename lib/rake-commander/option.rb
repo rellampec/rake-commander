@@ -156,7 +156,7 @@ class RakeCommander
         kargs.merge!(name:     name_full.dup.freeze)  if name_full
         kargs.merge!(desc:     @desc.dup)             if @desc
         kargs.merge!(default:  @default.dup)          if default?
-        kargs.merge!(type:     @type_coercion)        if @type_coercion.is_a?(Class)
+        kargs.merge!(type:     @type_coercion)        if allowed_type?(@type_coercion)
         kargs.merge!(required: required?)
       end
     end
