@@ -13,6 +13,7 @@ class RakeCommander
 
       @name_full  = name.freeze
       super(short.freeze, @name_full)
+
       @default        = kargs[:default]  if kargs.key?(:default)
       @desc           = kargs[:desc]     if kargs.key?(:desc)
       @required       = kargs[:required] if kargs.key?(:required)
@@ -33,7 +34,9 @@ class RakeCommander
     # Creates a new option, result of merging this `opt` with this option,
     # @return [RakeCommander::Option] where opt has been merged
     def merge(opt, **kargs)
-      raise "Expecting RakeCommander::Option. Given: #{opt.class}" unless opt.is_a?(RakeCommander::Option)
+      msg = "Expecting RakeCommander::Option. Given: #{opt.class}"
+      raise msg unless opt.is_a?(RakeCommander::Option)
+
       dup(**opt.dup_key_arguments.merge(kargs), &opt.original_block)
     end
 
@@ -81,7 +84,8 @@ class RakeCommander
 
     # @param [String, Nil] the argument, may it exist
     def argument
-      return nil unless argument?
+      return unless argument?
+
       self.class.name_argument(name_full)
     end
 
@@ -93,7 +97,8 @@ class RakeCommander
     # @return [Class, NilClass]
     def type_coercion
       value = @type_coercion || (default? && default.class)
-      return nil unless value.is_a?(Class)
+      return unless value.is_a?(Class)
+
       value
     end
 
@@ -107,9 +112,12 @@ class RakeCommander
     # @param opt_parser [OptionParser] the option parser to add this option's switch.
     # @param implicit_short [Boolean] whether the implicit short of this option is active in the opts_parser.
     def add_switch(opts_parser, where: :base, implicit_short: false, &middleware)
-      raise "Expecting OptionParser. Given: #{opts_parser.class}" unless opts_parser.is_a?(OptionParser)
+      msg = "Expecting OptionParser. Given: #{opts_parser.class}"
+      raise msg unless opts_parser.is_a?(OptionParser)
+
       args  = switch_args(implicit_short: implicit_short)
       block = option_block(&middleware)
+
       case where
       when :head, :top
         opts_parser.on_head(*args, &block)
@@ -167,6 +175,7 @@ class RakeCommander
       ishort = implicit_short ? "( -#{short_implicit} ) " : ''
       str    = "#{required_desc}#{ishort}#{desc}#{default_desc}"
       return [] if str.empty?
+
       string_to_lines(str, max: line_width)
     end
 
@@ -175,11 +184,14 @@ class RakeCommander
     end
 
     def default_desc
-      return nil unless default?
+      return unless default?
+
       str = "{ Default: '#{default}' }"
+
       if desc && !desc.downcase.include?('default')
         str = desc.end_with?('.') ? " #{str}" : ". #{str}"
       end
+
       str
     end
 
@@ -191,8 +203,11 @@ class RakeCommander
       name  ||= capture_arguments_name!(args, sample_n_short: sample && short)
 
       unless sample
-        raise ArgumentError, "A short of one letter should be provided. Given: #{short}" unless self.class.valid_short?(short)
-        raise ArgumentError, "A name should be provided. Given: #{name}" unless  self.class.valid_name?(name)
+        msg = "A short of one letter should be provided. Given: #{short}"
+        raise ArgumentError, msg unless self.class.valid_short?(short)
+
+        msg = "A name should be provided. Given: #{name}"
+        raise ArgumentError, msg unless self.class.valid_name?(name)
       end
 
       [short, name]
@@ -213,21 +228,20 @@ class RakeCommander
     # @note if found it removes it from args.
     # @return [String, Symbol, NilClass]
     def capture_arguments_name!(args, sample_n_short: false)
-      name = nil
+      name   = nil
       name ||= self.class.capture_arguments_name!(args, symbol: true)
       name ||= self.class.capture_arguments_name!(args, symbol: true, strict: false)
       name ||= self.class.capture_arguments_name!(args)
-      name || self.class.capture_arguments_name!(args, strict: false) unless sample_n_short
+      name ||= self.class.capture_arguments_name!(args, strict: false) unless sample_n_short
+      name
     end
 
     # The remaining `args` received in the initialization
     def other_args(*args)
       @other_args ||= []
-      if args.empty?
-        @other_args
-      else
-        @other_args.push(*args)
-      end
+      return @other_args if args.empty?
+
+      @other_args.push(*args)
     end
 
     # It consumes `other_args`, to prevent direct overrides to be overriden by it.
@@ -238,16 +252,25 @@ class RakeCommander
     end
 
     def fetch_type_from_other
-      return nil unless type = other_args.find {|arg| arg.is_a?(Class)}
-      type.tap { other_args.delete(type) }
+      other_args.find do |arg|
+        arg.is_a?(Class)
+      end.tap do |type|
+        next unless type
+
+        other_args.delete(type)
+      end
     end
 
     def fetch_desc_from_other
-      return nil unless value = other_args.find {|arg| arg.is_a?(String)}
-      other_args.dup.each do |val|
-        other_args.delete(val) if val.is_a?(String)
+      other_args.find do |arg|
+        arg.is_a?(String)
+      end.tap do |value|
+        next unless value
+
+        other_args.dup.each do |val|
+          other_args.delete(val) if val.is_a?(String)
+        end
       end
-      value
     end
   end
 end

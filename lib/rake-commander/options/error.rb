@@ -54,7 +54,7 @@ class RakeCommander
         # @param eklass [RakeCommander::Options::Error:Base::Class] the error class to retrive the option key
         # @return [RakeCommander::Option, NilClass]
         def error_option(err, eklass)
-          return false unless option_sym = eklass.option_sym(err.message)
+          return false unless (option_sym = eklass.option_sym(err.message))
 
           options_hash(with_implicit: true)[option_sym]
         end

@@ -99,12 +99,18 @@ class RakeCommander
         #   2. To overcome this limitation, you may enclose in double quotes and argument with
         #     that start (i,e, `"--argument"`).
         # @example
-        #   1. `-abc ARGUMENT` where only `c` receives the argument becomes `-ab -c ARGUMENT`
-        #   3. `-abc ARGUMENT` where `b` and `c` are argument receivers becomes `-a -b nil -c ARGUMENT`
-        #   2. `-acb ARGUMENT` where only `c` receives the argument becomes `-a -c nil -b ARGUMENT`
-        #   4. `-c --some-option ARGUMENT` where both options receive argument, becomes `-c nil --some-option ARGUMENT`
-        #   5. `-c --some-option -d ARGUMENT` where both options receive argument, becomes `-c nil --some-option nil -d ARGUMENT`
-        #   6. `-cd ARGUMENT` where `c` default is `"yeah"`, becomes `-c yeah -d ARGUMENT`
+        #   1. `-abc ARGUMENT` where only `c` receives the argument
+        #     becomes `-ab -c ARGUMENT`
+        #   2. `-abc ARGUMENT` where `b` and `c` are argument receivers
+        #     becomes `-a -b nil -c ARGUMENT`
+        #   3. `-acb ARGUMENT` where only `c` receives the argument
+        #     becomes `-a -c nil -b ARGUMENT`
+        #   4. `-c --some-option ARGUMENT` where both options receive argument,
+        #     becomes `-c nil --some-option ARGUMENT`
+        #   5. `-c --some-option -d ARGUMENT` where both options receive argument,
+        #     becomes `-c nil --some-option nil -d ARGUMENT`
+        #   6. `-cd ARGUMENT` where `c` default is `"yeah"`,
+        #     becomes `-c yeah -d ARGUMENT`
         # @param argv [Array<String>]
         # @param options [Hash] the defined `RakeCommander::Option` to re-arrange `argv` with.
         # @return [Array<String>] the re-arranged `argv`
@@ -145,17 +151,24 @@ class RakeCommander
         private
 
         # @example the output is actually a Hash, keyed by the Symbol of the option (short or name)
-        #   1. `-abc ARGUMENT` where only `c` receives the argument becomes `:a :b :c ARGUMENT`
-        #   3. `-abc ARGUMENT` where `b` and `c` are argument receivers becomes `:a :b nil :c ARGUMENT`
-        #   2. `-acb ARGUMENT` where only `c` receives the argument becomes `:a :c nil :b ARGUMENT`
-        #   4. `-c --some-option ARGUMENT` where both options receive argument, becomes `:c nil :some_option ARGUMENT`
-        #   5. `-c --some-option -d ARGUMENT` where first two options receive argument, becomes `:c nil :some_option nil :d ARGUMENT`
-        #   6. `-cd ARGUMENT` where `c` default is `"yeah"`, becomes `:c yeah :d ARGUMENT`
+        #   1. `-abc ARGUMENT` where only `c` receives the argument
+        #     becomes `:a :b :c ARGUMENT`
+        #   2. `-abc ARGUMENT` where `b` and `c` are argument receivers
+        #     becomes `:a :b nil :c ARGUMENT`
+        #   3. `-acb ARGUMENT` where only `c` receives the argument
+        #     becomes `:a :c nil :b ARGUMENT`
+        #   4. `-c --some-option ARGUMENT` where both options receive argument,
+        #     becomes `:c nil :some_option ARGUMENT`
+        #   5. `-c --some-option -d ARGUMENT` where first two options receive argument,
+        #     becomes `:c nil :some_option nil :d ARGUMENT`
+        #   6. `-cd ARGUMENT` where `c` default is `"yeah"`,
+        #     becomes `:c yeah :d ARGUMENT`
         # @return [Hash<Symbol, Array>]
         def explicit_argument_options(argv, options)
           decoupled  = decluster_shorts_n_names_to_sym(argv)
           grouped    = group_symbols_with_strings(decoupled)
           normalized = insert_missing_argument_to_groups(grouped, options)
+
           normalized.each_with_object({}) do |group, pre_parsed|
             opt_ref = group.first.is_a?(Symbol)? group.shift : nil
             pre_parsed[opt_ref] = group

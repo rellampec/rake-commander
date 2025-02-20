@@ -46,7 +46,7 @@ class RakeCommander
         #   2. We use `task_context` to open up extensibility.
         # @todo think if it should rather raise an `ArgumentError` when the task
         #   was not defined in an instance object of his class.
-        def install_task(&task_method)
+        def install_task(&task_method) # rubocop:disable Naming/BlockForwarding
           super(&task_context(&task_method))
         end
 
@@ -97,7 +97,7 @@ class RakeCommander
 
       # Launches the options parsing of this class.
       # @return [Hash] keyed by short.
-      def options(argv = ARGV, &block)
+      def options(argv = ARGV, &block) # rubocop:disable Naming/BlockForwarding
         return @options if instance_variable_defined?(:@options)
 
         @options = {}
