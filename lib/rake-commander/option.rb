@@ -20,6 +20,7 @@ class RakeCommander
       @type_coercion  = kargs[:type]     if kargs.key?(:type)
       @other_args     = args
       @original_block = block
+
       configure_other
     end
 
@@ -135,8 +136,9 @@ class RakeCommander
 
     # @return [Hash] keyed arguments to create a new object
     def dup_key_arguments
-      configure_other
       {}.tap do |kargs|
+        configure_other
+
         kargs.merge!(short:    short.dup.freeze)      if short
         kargs.merge!(name:     name_full.dup.freeze)  if name_full
         kargs.merge!(desc:     @desc.dup)             if @desc
@@ -245,9 +247,10 @@ class RakeCommander
     end
 
     # It consumes `other_args`, to prevent direct overrides to be overriden by it.
+    # @note at the end we will pass the switch arguments to OptsParser.
     def configure_other
       @type_coercion ||= fetch_type_from_other
-      @desc          ||= fetch_desc_from_other
+      @desc            = fetch_desc_from_other(@desc)
       nil
     end
 
@@ -261,16 +264,12 @@ class RakeCommander
       end
     end
 
-    def fetch_desc_from_other
-      other_args.find do |arg|
-        arg.is_a?(String)
-      end.tap do |value|
-        next unless value
+    def fetch_desc_from_other(original = nil)
+      other_desc = fetch_desc!(other_args)
 
-        other_args.dup.each do |val|
-          other_args.delete(val) if val.is_a?(String)
-        end
-      end
+      return original if other_desc.empty?
+
+      "#{original}\n#{other_desc}"
     end
   end
 end
