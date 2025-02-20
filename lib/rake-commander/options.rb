@@ -42,7 +42,7 @@ class RakeCommander
       # Defines a new option or opens for edition an existing one if `reopen: true` is used.
       # @note
       #   - If override is `true`, it will with a Warning when same `short` or `name` clashes.
-      def option(*args, override: true, reopen: false, **kargs, &block)
+      def option(*args, override: true, reopen: false, **kargs, &block) # rubocop:disable Naming/BlockForwarding, Style/ArgumentsForwarding
         return option_reopen(*args, override: override, **kargs, &block) if reopen
 
         opt = option_class.new(*args, **kargs, &block)
@@ -58,8 +58,8 @@ class RakeCommander
       #   2. It will have the effect of overriding existing options
       # @note when `short` and `name` are provided, `name` takes precedence over `short`
       #   in the lookup (to identify the existing option)
-      def option_reopen(*args, override: false, **kargs, &block)
-        aux = option_class.new(*args, **kargs, sample: true, &block)
+      def option_reopen(*args, override: false, **kargs, &block) # rubocop:disable Naming/BlockForwarding, Style/ArgumentsForwarding
+        aux = option_class.new(*args, **kargs, sample: true, &block) # rubocop:disable Naming/BlockForwarding, Style/ArgumentsForwarding
         opt = options_hash.values_at(aux.name, aux.short).compact.first
         return option(*args, **kargs, &block) unless opt
 
@@ -85,7 +85,8 @@ class RakeCommander
       #   should be overriden, may they clash
       # @param options [Enumerable<RakeCommander::Option>]
       def options_use(opts, override: true)
-        raise "Could not obtain list of RakeCommander::Option from #{opts.class}" unless opts = to_options(opts)
+        msg = "Could not obtain list of RakeCommander::Option from #{opts.class}"
+        raise msg unless (opts = to_options(opts))
 
         opts.each do |opt|
           add_to_options(opt.deep_dup, override: override)
@@ -164,7 +165,7 @@ class RakeCommander
       end
 
       # @return [OptionParser]
-      def new_options_parser(&block)
+      def new_options_parser(&block) # rubocop:disable Naming/BlockForwarding
         require 'optparse'
         OptionParser.new(&block)
       end
