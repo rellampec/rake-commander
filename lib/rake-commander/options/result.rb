@@ -101,7 +101,13 @@ class RakeCommander
         return @options if instance_variable_defined?(:@options)
 
         @options = {}
-        self.class.parse_options(argv, results: @options, leftovers: options_leftovers, &block)
+        self.class.parse_options(
+          argv,
+          results:   @options,
+          leftovers: options_leftovers,
+          &block
+        )
+
         @options
       end
 

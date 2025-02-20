@@ -11,6 +11,7 @@ class RakeCommander
       # just return @message
       def to_s
         return @message if @message
+
         unclassed(super)
       end
 
@@ -18,6 +19,7 @@ class RakeCommander
       # just return @message
       def message
         return @message if @message
+
         to_message(unclassed(super))
       end
 
@@ -30,9 +32,7 @@ class RakeCommander
         case value
         when StandardError
           to_message(value.message)
-        when String
-          value
-        when NilClass
+        when String, NilClass
           value
         else
           raise ArgumentError, "Expecting String, StandardError or NilClass. Given: #{value.class}"

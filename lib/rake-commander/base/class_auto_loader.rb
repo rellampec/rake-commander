@@ -50,17 +50,20 @@ class RakeCommander
       # @return [Boolean] determines if a given namespace is entitled for autoloading
       def autoload_class?(constant)
         constants = constant.to_s.split("::").compact
-        autoload = true
+        autoload  = true
+
         unless autoloaded_namespaces(:include).empty?
           autoload = autoloaded_namespaces(:include).any? do |ns|
             ns.to_s.split("::").compact.zip(constants).all? {|(r, c)| r == c}
           end
         end
+
         unless autoloaded_namespaces(:ignore).empty?
           autoload &&= autoloaded_namespaces(:ignore).none? do |ns|
             ns.to_s.split("::").compact.zip(constants).all? {|(r, c)| r == c}
           end
         end
+
         autoload
       end
 
@@ -90,8 +93,10 @@ class RakeCommander
       # Children classes of `autoloader_class` that have not been created an instance of.
       def unloaded_children
         return [] unless autoloaded_class
+
         new_detected = new_classes
         known_class!(*new_detected)
+
         descendants(parent_class: autoloaded_class, scope: new_detected).select do |child_class|
           !autoloaded_children.include?(child_class) && \
             !excluded_children.include?(child_class) && \
@@ -105,9 +110,12 @@ class RakeCommander
       # @return [Boolean] `true` if there were children loaded, `false` otherwise.
       def autoload_children(object = nil)
         return false if !autoloaded_class || @loading_children
+
         pending_children = unloaded_children
         return false if pending_children.empty?
+
         @loading_children = true
+
         pending_children.each do |klass|
           exclude = false
           child   = object ? klass.new(object) : klass.new
@@ -119,6 +127,7 @@ class RakeCommander
         ensure
           autoloaded_children.push(klass) unless exclude
         end
+
         @loading_children = false
         true
       end

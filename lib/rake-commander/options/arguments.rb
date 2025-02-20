@@ -115,8 +115,9 @@ class RakeCommander
         # @param options [Hash] the defined `RakeCommander::Option` to re-arrange `argv` with.
         # @return [Array<String>] the re-arranged `argv`
         def argv_pre_parsed(argv = ARGV, options:)
-          pre_parsed = explicit_argument_options(argv, options)
+          pre_parsed    = explicit_argument_options(argv, options)
           compact_short = ''
+
           pre_parsed.each_with_object([]) do |(opt_ref, args), out|
             next out.push(*args) unless opt_ref.is_a?(Symbol)
 

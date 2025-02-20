@@ -11,11 +11,13 @@ class RakeCommander
 
           def patch_prepend(_invoked_by)
             return unless target_defined?
+
             Rake::Application.prepend Patch
           end
 
           def target_defined?
             return true if defined?(target)
+
             puts "Warning (#{self}): undefined target #{target}"
             false
           end

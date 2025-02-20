@@ -23,6 +23,7 @@ class RakeCommander
       # @return [Boolean]
       def double_hyphen?(value)
         return false unless value.respond_to?(:to_s)
+
         !!value.to_s.match(DOUBLE_HYPHEN_REGEX)
       end
 

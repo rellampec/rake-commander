@@ -41,6 +41,7 @@ class RakeCommander
           # @return [Boolean] whether this error is enabled.
           def error_on_options(action = :not_used, error: RakeCommander::Options::Error::Base, &handler)
             RakeCommander::Options::Error::Base.require_argument!(error, :error, accept_children: true)
+
             @options_latest_error       = nil
             @error_on_options         ||= {}
             @error_on_options[error]    = action if action != :not_used
