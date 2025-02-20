@@ -99,9 +99,21 @@ class RakeCommander
     # @return [Class, NilClass]
     def type_coercion
       value = @type_coercion || (default? && default.class)
-      return unless value.is_a?(Class)
+      return unless allowed_type?(value)
 
       value
+    end
+
+    # @return [Boolean] whether the option is an enum with fixed values.
+    def enum?
+      type_coercion.is_a?(Array)
+    end
+
+    # @return [Array, NilClass] the valid options when is `enum?`
+    def enum_options
+      return unless enum?
+
+      type_coercion
     end
 
     # @return [Boolean]
@@ -152,6 +164,7 @@ class RakeCommander
     # @return [Array<Variant>]
     def switch_args(implicit_short: false)
       configure_other
+
       args = [short_hyphen, name_hyphen]
       args.push(*switch_desc(implicit_short: implicit_short))
       args << type_coercion if type_coercion
@@ -163,10 +176,13 @@ class RakeCommander
     # Called on parse runtime
     def option_block(&middleware)
       block_extra_args = [default, short, name, self]
+
       proc do |value|
         value = !value if type_coercion == FalseClass
         args  = block_extra_args.dup.unshift(value)
+
         original_block&.call(*args)
+
         middleware&.call(*args)
       end
     end
@@ -189,13 +205,7 @@ class RakeCommander
     def default_desc
       return unless default?
 
-      str = "{ Default: '#{default}' }"
-
-      if desc && !desc.downcase.include?('default')
-        str = desc.end_with?('.') ? " #{str}" : ". #{str}"
-      end
-
-      str
+      " { Default: '#{default}' }"
     end
 
     # Helper to simplify `short` and `name` capture from arguments and keyed arguments.
@@ -256,19 +266,15 @@ class RakeCommander
     end
 
     def fetch_type_from_other(original = nil)
-      type = fetch_type!(other_args)
+      other_type = fetch_type!(other_args)
 
       return original if original
 
-      type
+      other_type
     end
 
     def fetch_desc_from_other(original = nil)
-      other_desc = fetch_desc!(other_args)
-
-      return original if other_desc.empty?
-
-      "#{original}\n#{other_desc}"
+      joined_lines(original, fetch_desc!(other_args))
     end
   end
 end
