@@ -39,6 +39,11 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+## [0.4.2] - 2025-02-25
+
+### Fixed
+
+- `Option#type_coercion` should be dupped on inheritance.
 
 ## [0.4.1] - 2025-02-20
 

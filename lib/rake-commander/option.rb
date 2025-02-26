@@ -152,11 +152,11 @@ class RakeCommander
       {}.tap do |kargs|
         configure_other
 
-        kargs.merge!(short:    short.dup.freeze)      if short
-        kargs.merge!(name:     name_full.dup.freeze)  if name_full
-        kargs.merge!(desc:     @desc.dup)             if @desc
-        kargs.merge!(default:  @default.dup)          if default?
-        kargs.merge!(type:     @type_coercion)        if allowed_type?(@type_coercion)
+        kargs.merge!(short:    short.dup.freeze)     if short
+        kargs.merge!(name:     name_full.dup.freeze) if name_full
+        kargs.merge!(desc:     @desc.dup)            if @desc
+        kargs.merge!(default:  @default.dup)         if default?
+        kargs.merge!(type:     dupped_type)          if allowed_type?(@type_coercion)
         kargs.merge!(required: required?)
       end
     end
@@ -281,6 +281,18 @@ class RakeCommander
 
     def fetch_desc_from_other(original = nil)
       joined_lines(original, fetch_desc!(other_args))
+    end
+
+    def dupped_type
+      return @type_coercion if @type_coercion.is_a?(Class)
+      return @type_coercion unless @type_coercion.is_a?(Array)
+
+      @type_coercion.map do |value|
+        next value if value.is_a?(Class)
+        next value unless value.respond_to?(:dup)
+
+        value.dup
+      end
     end
   end
 end
