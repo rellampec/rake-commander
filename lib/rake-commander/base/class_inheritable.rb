@@ -15,11 +15,14 @@ class RakeCommander
         attrs = attrs.map(&:to_sym)
         inheritable_class_var(*attrs, deep_dup: deep_dup, &block)
         return unless add_accessors
+
         attrs.each do |attr|
           class_eval <<-RUBY, __FILE__, __LINE__ + 1
-            class << self; attr_accessor :#{attr} end
+            # class << self; attr_accessor :class_var; end
+            class << self; attr_accessor :#{attr}; end
           RUBY
         end
+
         self
       end
 
@@ -35,7 +38,8 @@ class RakeCommander
       #   that should NOT be inheritable.
       def attr_not_inheritable(*attrs)
         attrs.each do |attr|
-          next unless method = inheritable_class_var_method(attr)
+          next unless (method = inheritable_class_var_method(attr))
+
           inheritable_class_var[method].delete(attr)
         end
         self
@@ -86,6 +90,7 @@ class RakeCommander
         }.tap do |hash|
           hash[:deep_dup][:inheritable_class_var] = :default
         end
+
         @inheritable_class_var.tap do |_methods|
           vars.each {|var| inheritable_class_var_add(var, deep_dup: deep_dup, &block)}
         end
@@ -97,7 +102,9 @@ class RakeCommander
         # Remove previous definition if present
         attr_not_inheritable(var)
         method = deep_dup || block ? :deep_dup : :mirror
+
         inheritable_class_var[method][var] = block || :default
+
         self
       end
 
