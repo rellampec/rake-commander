@@ -3,8 +3,8 @@ class RakeCommander
     # Offers helpers to treat `ARGV`
     module Arguments
       RAKE_COMMAND_EXTENDED_OPTIONS_START = '--'.freeze
-      NAME_ARGUMENT    = /^--(?<option>[\w_-]*).*?$/
-      BOOLEAN_ARGUMENT = /(?:^|--)no-(?<option>[\w_-]*).*?$/
+      NAME_ARGUMENT    = /^--(?<option>[\w-]*).*?$/ # \w already has _
+      BOOLEAN_ARGUMENT = /(?:^|--)no-(?<option>[\w-]*).*?$/
 
       class << self
         def included(base)
@@ -237,7 +237,7 @@ class RakeCommander
           argv.each_with_object([]) do |arg, out|
             if single_hyphen?(arg) # short option(s)
               options = arg.match(SINGLE_HYPHEN_REGEX)[:options]
-              options.split('').each do |short|
+              options.split('').each do |short| # rubocop:disable Style/StringChars
                 out << short_sym(short)
               end
             elsif double_hyphen?(arg) # name option
