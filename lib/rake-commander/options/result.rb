@@ -34,7 +34,12 @@ class RakeCommander
         # @param results [Hash] with `short` option as `key` and final value as `value`.
         # @see `RakeCommander::Options#parse_options`
         def parse_options(argv = ARGV, results: {}, leftovers: [], &middleware)
-          leftovers.push(*super(argv, &results_collector(results, &middleware)))
+          leftovers.push(
+            *super(
+              argv,
+              &results_collector(results, &middleware)
+            )
+          )
         end
 
         # **Extend** method to ensure options are parsed before calling task.
