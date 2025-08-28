@@ -10,6 +10,8 @@ Gemfile.lock
 # build artifacts
 *.gem
 /.bundle/
+/.vscode
+.solargraph.yml
 /vendor/bundle
 /spec/reports/
 /tmp/
